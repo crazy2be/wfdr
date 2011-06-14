@@ -31,5 +31,6 @@ If all goes well, you should now be able to navigate to http://localhost:8080/ t
 Writing Your Own Module(s)
 --------------------------
 The WFDR framework is designed to make writing additional modules as bits of functionality as easy as possible. Each module is located in `modules/`, and includes everything needed for the module to properly function, including css, js, images, (mustache) templates, and source code. You can look at some of the other modules to get an idea of how things work, but they can really work any way you wish, as long as you do the following:
- - Put your source files in `modules/<name>/src`, and have an accompanying Makefile that will compile the source files.
- - The compiled executable should go in `modules/<name>/bin`. This executable should have the same name as the module, making the full path `modules/<name>/bin/<name>`. Alternatively, you can name the executable anything you want (it should still go in `modules/<name>/bin`), and have a shell script named with the same name as the module in `modules/<name>/sh`. If this script has +x set, it will be run instead.
+
+ -  Put your source files in `modules/<name>/src`, and have an accompanying Makefile that will compile the source files.
+ -  The compiled executable should go in `modules/<name>/bin`. This executable should have the same name as the module, making the full path `modules/<name>/bin/<name>`. Alternatively, you can name the executable anything you want (it should still go in `modules/<name>/bin`), and have a shell script named with the same name as the module in `modules/<name>/sh`. If this script has +x set, it will be run instead.
