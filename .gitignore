@@ -6,8 +6,10 @@
 # *~
 # Ignores binary files in src/
 framework/src/*/*
-!framework/src/*/*.go
-!framework/src/*/Makefile
+!*.c
+!*.h
+!*.go
+!Makefile
 !framework/src/pkg/*
 !framework/src/automatic-builds/*
 !framework/src/bug-testcases/*

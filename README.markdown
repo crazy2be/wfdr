@@ -18,18 +18,19 @@ Getting Started
 The WFDR framework is designed to be simple to get started with, and should work fairly well with whatever your favorite HTTP library is.
 
     git clone git://github.com/crazy2be/wfdr.git
+    cd wfdr
     ./compile
 
 If all goes well, you've now built the framework. If there is an error while compiling, please let me know by filing a bug report. The compile script should ensure everything it needs is installed.
 
-Now, to start the framework, open up two terminals. In both terminals, `cd` to the location where you installed the framework. In the first terminal, run `wfdr-deamon` (sic). This manages your various module processes, as well as starting some other programs to make sure that files are synced automatically when changed (on Linux at least). In the second terminal, you can now use the "wfdr" command to control modules by communicating with the daemon. Let's start a few of the included example modules:
+Now, to start the framework, open up two terminals. In both terminals, `cd` to the location where you installed the framework. In the first terminal, run `wfdr-deamon` (sic). This manages your various module processes, as well as starting some other programs to make sure that files are synced automatically when changed (on Linux at least). In the second terminal, you can now use the `wfdr` command to control modules by communicating with the daemon. Let's start a few of the included example modules:
 
     wfdr start base main auth photos pages news
 
-If all goes well, you should now be able to navigate to http://localhost:8080/ to see these modules running.
+If all goes well, you should now be able to navigate to http://localhost:8080/ and see these modules running.
 
-Writing Your Own Module(s)
---------------------------
+Writing Your Own Module
+-----------------------
 The WFDR framework is designed to make writing additional modules as bits of functionality as easy as possible. Each module is located in `modules/`, and includes everything needed for the module to properly function, including css, js, images, (mustache) templates, and source code. You can look at some of the other modules to get an idea of how things work, but they can really work any way you wish, as long as you do the following:
 
  -  Put your source files in `modules/<name>/src`, and have an accompanying Makefile that will compile the source files.
