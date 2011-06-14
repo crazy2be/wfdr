@@ -1,0 +1,113 @@
+{{>html-header}}
+{{>head-header}}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.8/jquery-ui.min.js"></script>
+{{! TODO: Compressed version }}
+<script type="text/javascript" src="/js/jquery.ui.datetime.src.js"></script>
+</script>
+<script type="text/javascript" src="/js/tinymce/jquery.tinymce.js"></script>
+<script type="text/javascript" src="/js/events/preview.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#date').datetime();
+	$('#body').tinymce();
+
+	// Prepare the live preview.
+	prepareLivePreview();
+});
+</script>
+<link rel="stylesheet" type="text/css" media="screen" href="http://jqueryui.com/themes/base/jquery.ui.all.css" />
+<link rel="stylesheet" type="text/css" href="/css/jquery.ui.datetime.css" />
+<link rel="stylesheet" type="text/css" href="/css/events/edit.css" />
+<link rel="stylesheet" type="text/css" href="/css/events/main.css" />
+<link rel="stylesheet" type="text/css" href="/css/chunks/photo-list.css" />
+{{>head-end}}
+{{>body-header}}
+<div class="content-text clearfix">
+{{#Perms}}
+	{{#Write}}
+		{{#Object}}
+<form method="post" enctype="multipart/form-data"
+{{! This allows particular events to have permissions associated with them, while making the permission to create new events seperately editable. Permissions to /events/add will allow you to create new events, while permissions to /events/edit/ will allow you to edit all events, and permissions to /events/edit/ID will allow you to edit the event with the specified ID. Of course, permissions to /events/ will give you full access to all the capabilities of the module.}}
+{{#ID}} action="/events/edit/{{ID}}" {{/ID}}
+{{^ID}} action="/events/add" {{/ID}}
+>
+	<fieldset>
+		<legend>Basic information</legend>
+		<div class="clearfix field">
+			<label for="title">Event name</label>
+			<input type="text" id="title" name="title" value="{{Title}}" />
+		</div>
+		<div class="clearfix field">
+			<label for="importance">Importance</label>
+			<select id="importance-dd" name="importance" selected="{{Importance}}">
+				<option value="1">1 - Major, school-wide event</option>
+				<option value="2">2 - Minor, club-related event</option>
+			</select>
+			<p class="desc">Minor events will appear half the size of major events</p>
+		</div>
+		<div class="clearfix field">
+			<label for="date">Date and time</label>
+			<input type="text" id="date" name="date" value="{{Time}}" />
+			<p class="desc">If it is a multi-day event, specify only the first day. If no calendar pops up, enter the date in this format: YYYY-MM-DD HH:MM (Day). For example: 2011-01-11 19:13 (Tuesday).</p>
+		</div>
+		<div class="clearfix field">
+			<label for="img">Background image</label>
+			<input type="file" id="img" name="img" />
+			<p class="desc">What image should be shown behind the event?. The image should be 480x200px for major events and 240x100px for minor events.</p>
+		</div>
+		<div class="clearfix field">
+			<label for="desc">Description</label>
+			<textarea id="desc" name="desc"{{! onkeyup="updateEventDesc()"}}>{{Desc}}</textarea>
+			<p class="desc">Please keep your description to one or two sentences.</p>
+		</div>
+	</fieldset>
+
+	<fieldset>
+		<legend>Preview</legend>
+		<ul class="events photo-list clearfix">
+			<li id="event-base" class="event photo-list-item importance-{{Importance}}">
+				<a href="#">
+					<div class="text">
+						<h3 id="event-title">Event name</h3>
+						<h4>Date</h4>
+						<p id="event-desc">Description</p>
+					</div>
+					<img id="event-img" src="{{Img}}" alt="Event image" />
+				</a>
+			</li>
+		</ul>
+	</fieldset>
+
+	<fieldset>
+		<legend>Linked content</legend>
+		<div class="clearfix field">
+			<label for="id">Page URL</label>
+			<input type="hidden" id="orig-id" name="orig-id" value="{{ID}}" />
+			<input type="text" id="id" name="id" value="{{ID}}" />
+			<p class="desc">What is the URL to this event's page? Please separate words with dashes.</p>
+		</div>
+		<div class="clearfix field">
+                        <p>
+			<textarea id="body" name="body" class="text-content">
+				{{#PageData}}
+					{{Content}}
+				{{/PageData}}
+			</textarea>
+		</div>
+	</fieldset>
+        <p><br /></p>
+	<input type="submit" id="save-event" value="Save Event" />
+	<input type="submit" name="delete-event" id="delete-event" value="Delete Event"  />
+</form>
+		{{/Object}}
+	{{/Write}}
+	{{^Write}}
+		You do not have permission to edit this page.
+		{{^Authenticated}}
+			<a href="/openid?continue-url=/events/add">Logging in</a> may solve this problem.
+		{{/Authenticated}}
+	{{/Write}}
+{{/Perms}}
+</div>
+{{>body-end}}
+{{>html-end}}

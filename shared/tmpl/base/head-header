@@ -1,0 +1,13 @@
+{{! Goes at the start of the head}}
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Vanilla WFDR - {{Title}}</title>
+
+    {{! For mobile }}
+    <meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=0" />
+
+    {{! TODO: Move this to body? }}
+
+    {{>chunks/global-scripts}}
+    {{>chunks/global-stylesheets}}

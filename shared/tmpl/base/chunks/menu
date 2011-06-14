@@ -1,0 +1,28 @@
+<div id="header" class="clearfix">
+  <div id="header-inner" class="clearfix">
+    <div id="navigation">
+      <ul id="links">
+      {{#ModuleName}}
+				<li><a href="/" title="Home" id="logo" {{#Main}}class="current"{{/Main}}>Home</a></li>
+        <li><a href="/events" title="Upcoming events" id="header-events" {{#Events}}class="current"{{/Events}} >Events</a></li>
+        <li><a href="/photos" title="Photos" id="header-photos" {{#Photos}}class="current"{{/Photos}} >Photos</a></li>
+        <li><a href="/news" title="News" id="header-news" {{#News}}class="current"{{/News}}>News</a></li>
+      {{/ModuleName}}
+      </ul>
+			<ul id="account">
+				{{#Perms}}
+				<li>
+				{{^Authenticated}}
+					<a href="/openid?continue-url={{#Request}}{{#URL}}{{Path}}{{/URL}}{{/Request}}">Login</a>
+				{{/Authenticated}}
+				<!--
+				{{#Authenticated}}
+					<a>{{#User}}{{FirstName}}{{/User}}</a>
+				{{/Authenticated}}
+				-->
+				</li>
+				{{/Perms}}
+			</ul>
+    </div>
+  </div>
+</div>

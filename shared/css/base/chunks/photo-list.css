@@ -1,0 +1,57 @@
+.photo-list-item {
+	position: relative;
+	float: left;
+	overflow: hidden;
+}
+
+img {
+	border: 0 none;
+}
+
+.text a {
+	border: none;
+}
+
+.text a:hover {
+	border: none;
+	background: none;
+}
+
+.text {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.text h3 {
+	font-size: 1.5em;
+	color: #FFF;
+}
+
+.text h4 {
+	color: #EEE;
+}
+
+.text h3, .text h4 {
+	position: relative;
+	display: inline;
+	font-weight: normal;
+	bottom: 7px;
+}
+
+.photo-list-item:hover h3 {
+	text-decoration: underline;
+}
+
+.text p {
+	color: #DDD;
+	font-size: .8em;
+	font-weight: normal;
+}
+
+.text h3, .text h4, .text p {
+	padding: 8px;
+	background: #e8a822;
+	background: rgba(232, 168, 34, 0.6);
+}

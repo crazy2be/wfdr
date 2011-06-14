@@ -1,0 +1,16 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+<div class="content-text">
+<h1>Various Pages:</h1>
+<ul>
+{{#Object}}
+<li>
+<a href="/pages/{{Name}}">{{Title}} ({{Name}})</a>
+</li>
+{{/Object}}
+</ul>
+</div>
+{{>body-end}}
+{{>html-end}}

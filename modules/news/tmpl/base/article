@@ -1,0 +1,19 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+{{#Object}}
+{{#Perms}}
+<ul class="toolbar clearfix">
+	{{#Write}}
+<li><a href="/news/{{Name}}/edit">Edit</a></li>
+	{{/Write}}
+</ul>
+{{/Perms}}
+<div class="content-text">
+<h1>{{Title}}</h1>
+{{{Content}}}
+</div>
+{{/Object}}
+{{>body-end}}
+{{>html-end}}

@@ -1,0 +1,13 @@
+.picture a, .picture a:hover {
+	border: none;
+	background: none;
+}
+#content li {
+	display: inline;
+}
+#content li.picture {
+	float: left;
+}
+#content li.picture a:hover img {
+	border:4px solid #000064;
+}

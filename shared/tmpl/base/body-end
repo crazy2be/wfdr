@@ -1,0 +1,12 @@
+{{!Goes at the end of the body.}}
+			</div> {{!content-inner}}
+		{{>chunks/footer}}
+		</div> {{!content}}
+	</div> {{!wrapper}}
+	<script type="text/javascript" src="/js/google-analytics.js"></script>
+	{{! Preloading images }}
+	<div style="display:none">
+		<img src="/img/logo-hover.png" />
+		<img src="/img/hover-tab.png" />
+	</div>
+</body>

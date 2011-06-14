@@ -1,0 +1,18 @@
+/* Warning styles */
+.warning {
+	background: #FF7777;
+	border: 1px red solid;
+	padding: 1em;
+	overflow: auto;
+}
+.warning img.firefox-eating-ie {
+	float: left;
+	width: 128px;
+}
+.warning img.close {
+	float: right;
+	position: relative;
+	top: -1em;
+	right: -1em;
+	cursor: pointer;
+}

@@ -1,0 +1,39 @@
+{{>html-header}}
+	{{>head-header}}
+		<link rel="stylesheet" type="text/css" href="/css/chunks/photo-list.css" />
+		<link rel="stylesheet" type="text/css" href="/css/events/main.css" />
+	{{>head-end}}
+	{{>body-header}}
+		{{#Perms}}
+		<ul class="toolbar clearfix">
+			{{#Write}}
+				<li><a href="/events/add">New Event</a></li>
+			{{/Write}}
+		</ul>
+		{{/Perms}}
+		<ul class="events photo-list clearfix">
+		{{#Object}}
+			{{#Events}}
+			<li class="event photo-list-item importance-{{Importance}}">
+				<a href="{{Link}}">
+					<div class="text">
+						<h3>{{Title}}</h3>
+						<h4>{{#Time}}{{SimpleString}}{{/Time}}</h4>
+						<p>{{Desc}}</p>
+					</div>
+					<img src="{{Img}}">
+				</a>
+			</li>
+			{{/Events}}
+			{{#Filler}}
+				<li class="photo-list-item filler importance-{{Importance}}">
+					<div class="filler-inner">
+						<h2><a href="/events/add">Add a new event</a></h2>
+					</div>
+				</li>
+			{{/Filler}}
+		{{/Object}}
+		</ul>
+		<iframe style="border-width:0" src="data:text/html,Google calendar goes here" width="800" height="600" frameborder="0" scrolling="no"></iframe>
+	{{>body-end}}
+{{>html-end}}

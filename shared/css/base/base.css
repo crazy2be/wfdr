@@ -1,0 +1,62 @@
+/* Layout */
+body {
+    background-color: #ffd872;
+}
+/* The whole page: menu, content, footer, etc. */
+#content-inner, #header-inner, #footer-inner {
+  overflow: hidden;
+}
+#content-inner, #header {
+  -moz-box-shadow: 0 0 10px 5px #888;
+  -webkit-box-shadow: 0 0 10px 5px #888;
+  box-shadow: 0 0 10px 5px #888;
+}
+#content-inner {
+	background-color: #FFF;
+}
+.content-text {
+  padding: 1em;
+  background-color: #ffffff;
+}
+/* Header */
+#header {
+  background: #e8a822;
+  background: -moz-linear-gradient(bottom, #e8a822, #ffd872);
+  background: -webkit-linear-gradient(#ffd872, #e8a822);
+}
+/* Navigation */
+#navigation ul li
+{
+  list-style-type: none;
+  display: inline;
+}
+#navigation li a {
+  padding: .5em;
+  border-bottom: none;
+}
+/* Footer */
+#footer
+{
+	text-align: right;
+	padding: .2em .1em;
+	margin-top: 7px;
+	color: #666;
+	text-shadow: 1px 1px 1px #fff;
+}
+#footer p {
+  font-size: .6em;
+}
+/* Toolbar css. Might want to move this into a different file if the css gets very big. */
+ul.toolbar {
+	line-height: 1.5em;
+	list-style: none;
+	background: #ffd872;
+}
+ul.toolbar li {
+	float: left;
+	margin: .2em .4em;
+}
+#content {
+//  margin-top: 2.5em;
+overflow:hidden;
+}

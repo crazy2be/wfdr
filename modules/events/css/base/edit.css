@@ -1,0 +1,56 @@
+fieldset {
+	border: 1px solid #EEE;
+	border-width: 1px 0 0 0;
+	padding: .5em;
+}
+legend {
+	font-size: 1.5em;
+	font-weight: bold;
+	text-align: right;
+}
+label {
+	float: left;
+	width: 20%;
+	font-weight: bold;
+}
+input, textarea, select {
+	float: right;
+	width: 80%;
+	margin: 0 -1px;
+	border: 1px solid #DDD;
+	line-height: 1.5em;
+}
+textarea {
+	width: 100%;
+}
+textarea.text-content {
+  float: none;
+}
+#body_tbl {
+	width: 100%;
+}
+div.field {
+	padding: .5em;
+}
+div.field img {
+	float: right;
+}
+p.desc {
+	float: left;
+	color: #AAA;
+	margin-top: .3em;
+}
+.ui-datetime {
+	margin-top: 1.5em;
+	background: #FFF;
+}
+#save-event, #delete-event {
+	float: left;
+	line-height: 2em;
+	font-size: 2em;
+	width: 50%;
+}
+#body {
+	height: 25em;
+	width: 100%;
+}

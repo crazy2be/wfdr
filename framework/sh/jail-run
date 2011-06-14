@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Default run file to be used if the module does not provide a custom one.
+
+if [ $# -lt 1 ]; then
+	echo "Not enough arguments provided!"
+	echo "Usage: run <modulename>"
+	exit 1
+fi
+
+logfile=log/`date`
+
+# durp chroot only works for root durp
+#chroot .
+$1 &> "$logfile" &
+module=$!
+echo pid: $module > "$logfile"
+trap "kill $module" SIGINT
+trap "kill $module" SIGKILL
+wait

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+wfdr-cache-monitor -sourcedir="shared/tmpl" -destdir="cache/tmpl" -filetype="tmpl" -mode="deamon";
+#echo "Syncing shared css..."
+wfdr-cache-monitor -sourcedir="shared/css" -destdir="cache/css" -filetype="css" -mode="deamon";
+#echo "Syncing shared images..."
+wfdr-cache-monitor -sourcedir="shared/img" -destdir="cache/img" -filetype="img" -mode="deamon";
+#echo "Syncing shared javascript..."
+wfdr-cache-monitor -sourcedir="shared/js" -destdir="cache/js" -filetype="js" -mode="deamon";

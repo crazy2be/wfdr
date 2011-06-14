@@ -1,0 +1,10 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+<div class="content-text">
+<h2>You are not logged in, and cannot upload photos!</h2>
+<p>Please <a href="https://www.google.com/accounts/AuthSubRequest?scope=http://picasaweb.google.com/data/&session=1&secure=0&next=http://{{#Request}}{{Host}}{{/Request}}/picasa/auth">login</a> in order to upload photos. We cannot allow annonymous upload because of the potential for abuse, and upload will only work if you have been previously granted upload permission by one the the site admins. If you do not have the correct permissions, upload will fail.</p>
+</div>
+{{>body-end}}
+{{>html-end}}

@@ -1,0 +1,25 @@
+{{>html-header}}
+  {{>head-header}}
+    <link rel="stylesheet" href="/css/pages/base.css">
+  {{>head-end}}
+  {{>body-header}}
+    {{#Object}}
+    {{#Perms}}
+    {{#Write}}
+    <form method="post" action="/pages/{{Name}}">
+      <div id="topbar">
+        <div id="save"><input type="submit" id="save-inner" value="Publish" /></div> 
+        <div id="title"><input name="title" id="title-inner" value="{{Title}}" /></div>
+      </div>
+      <textarea name="content" id="page-content">{{Content}}</textarea>
+    </form>
+    {{/Write}}
+    {{^Write}}
+      <div class="content-text">
+        <p>You do not currently have the permissions required to edit this page. {{^Authenticated}}<a href="/openid?continue-url=/pages/edit/{{Name}}">Logging in</a>{{/Authenticated}} may solve this issue.</p>
+      </div>
+    {{/Write}}
+    {{/Perms}}
+    {{/Object}}
+  {{>body-end}}
+{{>html-end}}

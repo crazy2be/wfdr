@@ -1,0 +1,83 @@
+/* Text styles for h1, h2, p, etc. Used by TinyMCE and all of the pages that include {{>chunks/global-stylesheets}}. */
+
+/* Margin and padding mess up the layout. */
+* {
+ margin: 0px;
+ padding: 0px;
+}
+
+body {
+	font-size: 1em;
+	font-family: sans-serif;
+}
+
+/* Anchor styles. */
+a {
+	color: #000064;
+	text-decoration: none;
+	font-weight: bold;
+}
+
+a:hover {
+	/*color: #ffd872;
+	 background-color: #000064;*/
+	border-bottom: 1px solid #000064;
+	text-shadow: 0 0 3px white;
+}
+
+/* Clearfix hack */
+.clearfix:after {
+  content: '.';
+  display: block;
+  height: 0px;
+  clear: both;
+  visibility: hidden;
+}
+
+* html .clearfix {
+  height: 1%
+}
+
+.clearfix {
+  display: block;
+}
+/* End clearfix hack */
+
+/* For the TOS to avoid validator complaints (also works for other "legal"
+   text) */
+.legal h3 {
+  font-size: 14pt;
+  color: #333333;
+  font-family: sans-serif;
+}
+
+.legal h4 {
+  font-size: 12pt;
+  color: #333333;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+.legal ol {
+  margin-left: 50px;
+  padding: 0px;
+}
+
+.legal ul {
+  margin: 0px;
+  padding: 0px;
+}
+
+/* These likely won't be very useful to TinyMCE. */
+.legal ul.indent2 {
+  margin-left: 100px;
+}
+
+.legal ul.nobullet {
+  list-style-type: none;
+}
+
+.legal ul.nobullet-indent {
+  list-style-type: none;
+  margin-left: 50px;
+}

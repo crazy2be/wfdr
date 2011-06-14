@@ -1,0 +1,16 @@
+{{!Goes at the top of the body}}
+
+  <body>
+    <div id="wrapper">
+      {{>chunks/menu}}
+
+      <div id="content">
+        <div id="content-inner">
+
+          <noscript>
+            <div id="js-warning">
+              <div id="js-warning-inner">
+                <p>This website works best with JavaScript enabled.</p>
+              </div>
+            </div>
+          </noscript>

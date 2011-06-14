@@ -1,0 +1,21 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+{{#Perms}}
+{{#Write}}
+<ul class="clearfix toolbar"><li><a href="/news/add">Add Article</a></li></ul>
+{{/Write}}
+{{/Perms}}
+<div class="content-text">
+<h1>News!</h1>
+<ul>
+{{#Object}}
+<li>
+<a href="/news/{{Name}}">{{Title}}</a>
+</li>
+{{/Object}}
+</ul>
+</div>
+{{>body-end}}
+{{>html-end}}

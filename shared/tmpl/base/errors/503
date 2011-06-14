@@ -1,0 +1,13 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+<div class="content-text">
+<h1>Service unavailable (503)</h1>
+<p>Oh no! The machine is busted! Perhaps you should yell at your <a href="/contact">nearest computer geek</a> to fix it.</p>
+<p><br /></p>
+<h2>Technical information</h2>
+<p>The remote server did not respond to the request. It may not be running or may have crashed.</p>
+</div>
+{{>body-end}}
+{{>html-end}}

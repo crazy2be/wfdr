@@ -1,0 +1,31 @@
+#!/bin/bash
+if [ $# -lt 1 ]; then
+	echo "Not enough arguments! Please specify a module name!"
+	exit 1
+fi
+
+recompile=0
+if [ $# -gt 1 ]; then
+	if [ $2 = "-recompile" -o $1 = "-recompile" ]; then
+		recompile=1
+	fi
+fi
+
+cd modules/$1
+
+if [ ! -d bin ]; then
+	mkdir bin
+fi
+
+if [ -f src/Makefile ]; then
+	echo "Using Makefile in src/"
+	cd src
+	if [ $recompile -eq 1 ]; then
+		gomake clean
+	fi
+	gomake
+	exit
+fi
+
+echo "No Makefile found. If this module should be compiled, consider adding a makefile."
+exit 1

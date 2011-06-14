@@ -1,0 +1,54 @@
+{{>html-header}}
+{{>head-header}}
+<link rel="stylesheet" type="text/css" href="/css/slimbox2.css">
+<script type="text/javascript" src="/js/slimbox2.js"></script>
+<script type="text/javascript" src="/js/photos/base.js"></script>
+{{>head-end}}
+{{>body-header}}
+<ul class="photos clearfix">
+{{#Object}}{{#Thumbnails}}
+<li class="picture">
+{{#Small}}
+<div class="picture-inner">
+{{/Small}}
+<a href="{{Url}}" title="{{Summary}}" alt="{{Summary}}" rel="lightbox-journey">
+{{#Small}}
+	<img 
+		src="{{Url}}" 
+		alt="{{Summary}}"
+		width="{{Width}}"
+		height="{{Height}}"
+{{/Small}}
+{{#Large}}
+{{!Attributes for the large preview image (shown on hover)}}
+		data-lgimg='{"src":"{{Url}}","width":"{{Width}}","height":"{{Height}}"}'
+{{/Large}}
+{{/Thumbnails}}
+{{!Attributes for the full sized image}}
+		data-fullimg='{"src":"{{Url}}","width":"{{Width}}","height":"{{Height}}"}'
+	/>
+	</a>
+</div>
+</li>
+{{/Object}}
+<li id="hover-image">
+	<div id="hover-image-inner">
+		<img id="hover-image-img-small" />
+		<img id="hover-image-img" />
+	</div>
+</li>
+</ul>
+{{!To be used in the future if slimbox2 annoys me enough}}
+<div class="overlay">
+	<div class="overlay-middle-horizontal">
+		<div class="overlay-middle-vertical">
+			<div class="overlay-inner">
+				<img id="overlay-photo">
+				<div id="overlay-photo-desc">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{{>body-end}}
+{{>html-end}}

@@ -1,0 +1,64 @@
+{{>html-header}}
+{{>head-header}}
+<link href="/css/photos/uploader.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/js/modernizr-1.6.min.js"></script>
+<script type="text/javascript" src="/js/photos/uploader.js"></script>
+{{>head-end}}
+{{>body-header}}
+{{#Perms}}
+{{#Write}}
+{{#Object}}
+{{^PicasaAuthenticated}}
+In order to upload photos, you must <a href="https://www.google.com/accounts/AuthSubRequest?scope=http://picasaweb.google.com/data/&session=1&secure=0&next=http://{{#Request}}{{Host}}{{/Request}}/picasa/auth">give us permission</a> to upload photos from your account. We require this in order to associate all pictures uploaded by you with your account.
+<div class="warning">
+<b>Note:</b> Any and all photos uploaded from your account are your responsibility. If a freind uploads an inappropriate picture from your account, it is your responsibility, and you will be held accountable.
+</div>
+{{/PicasaAuthenticated}}
+{{#PicasaAuthenticated}}
+{{! For a fallback if HTML5 uploader doesn't work }}
+<form action="/picasa/upload" enctype="multipart/form-data" method="POST">
+	<ul class="clearfix toolbar">
+		<li>
+			<label for="album-name">Upload to:</label>
+			<select id="album-name" name="album">
+				<option value="0">Select...</option>
+				{{#Object}}
+				{{#Albums}}
+				<option value="{{AlbumId}}">{{Title}}</option>
+				{{/Albums}}
+				{{/Object}}
+			</select>
+		</li>
+		<li>
+			<div class="html5-not-supported">
+				<label for="Filedata">Select File(s)</label>
+				<input type="file" name="Filedata">
+			</div>
+		</li>
+		<li>
+			<div class="html5-not-supported">
+				<input type="submit" value="Upload">
+			</div>
+		</li>
+	</ul>
+	<div style="background-color: white">
+	<div id="tip"><b>Tip:</b> Hold Ctrl to select multiple files, or Shift to select a swatch of them at a time.</div>
+	<div id="photos-upload-progress-outer"><progress id="photos-upload-progress" value="0" max="1000"></progress><span>Uploading...</span></div>
+	<div id="photos-drop" class="drop clearfix">
+		<h1>Drop files here to upload!</h1>
+		<div class="html5-not-supported">
+		<h2>Javascript or HTML5 Not supported</h2>
+		<p>You don't seem to have javascript enabled, or your browser does not support html5. It is required to take advantage of drag and drop functionality that this uploader utilizes. If you wish to upload files one at a time, you can do so above. However, we recommend that you upgrade to <a href="http://www.mozilla.com/">Mozilla Firefox</a> or <a href="http://www.google.com/chrome">Google Chrome</a>, both of which are faster and support the functionality this requires.</p>
+		</div>
+	</div>
+	</div>
+</form>
+{{/PicasaAuthenticated}}
+{{/Object}}
+{{/Write}}
+{{^Authenticated}}
+Please <a href="/openid?continue-url=/photos/upload">login</a>.
+{{/Authenticated}}
+{{/Perms}}
+{{>body-end}}
+{{>html-end}}

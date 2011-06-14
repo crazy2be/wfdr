@@ -1,0 +1,49 @@
+#bottom-buttons img {
+  border: 0px;
+}
+
+#content h2 {
+  font-size: 160%;
+  margin: 0 0 .5em;
+}
+
+#google-search-container {
+  border: none;
+}
+
+#google-search-button {
+  float: right;
+  padding: 0px;
+  font-size: 1em;
+  -webkit-appearance: default-button;
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(1, rgb(221,221,221)),
+    color-stop(0, rgb(204,204,204))
+  );
+  background-image: -moz-linear-gradient(
+    center bottom,
+    rgb(221,221,221) 100%,
+    rgb(204,204,204) 0%
+  );
+  font-family: arial, sans-serif;
+  height: 30px;
+  border: 0px solid white;
+  width: 159px;
+  -webkit-box-shadow: -1px -1px 1px #7d7d7d inset;
+  -moz-box-shadow: inset -1px -1px 1px #7d7d7d;
+}
+
+#google-search-results {
+	display: none;
+}
+
+#google-search input.google-textbox {
+  font-size: 1em;
+}
+
+.anythingSlider .wrapper .image a:hover {
+  border-bottom: 0px;
+}

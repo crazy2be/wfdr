@@ -1,0 +1,37 @@
+{{>html-header}}
+  {{>head-header}}
+  <link rel="stylesheet" href="/css/news/edit.css">
+  <script type="text/javascript" src="/js/tinymce/jquery.tinymce.js"></script>
+  <script type="text/javascript" >
+  $(document).ready(function() {
+		$('#page-content').tinymce();
+		// Makes the <input> into a editable <h1>, so that it looks more like the final product.
+		title = $('#title-inner').val();
+		$('#title').replaceWith($('<h1></h1>').html(title).attr("id", "title").attr("contenteditable", true));
+		$('#title').parent().submit(function() {
+			$('#title').replaceWith($('<input></input>').val($('#title').html()).attr('id', 'title').attr('name', 'title'));
+		});
+	});
+	</script>
+  {{>head-end}}
+  {{>body-header}}
+    {{#Object}}
+    {{#Perms}}
+    {{#Write}}
+    <form method="post" action="/news/{{Name}}"> 
+			<div id="title"><input name="title" id="title-inner" value="{{Title}}" /></div>
+      <input name="name" id="name" placeholder="Name (used to link to the event at /events/<name>)" value="{{Name}}" />
+      <input type="hidden" id="oldname" name="oldname" value="{{Name}}" />
+      <textarea name="content" id="page-content">{{Content}}</textarea>
+      <div id="save"><input type="submit" id="save-inner" value="Publish" /></div>
+    </form>
+    {{/Write}}
+    {{^Write}}
+      <div class="content-text">
+        <p>You do not currently have the permissions required to edit this page. {{^Authenticated}}<a href="/openid?continue-url=/pages/edit/{{Name}}">Logging in</a>{{/Authenticated}} may solve this issue.</p>
+      </div>
+    {{/Write}}
+    {{/Perms}}
+    {{/Object}}
+  {{>body-end}}
+{{>html-end}}

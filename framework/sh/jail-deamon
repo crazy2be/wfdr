@@ -1,0 +1,19 @@
+#!/bin/bash
+# This script is run to start the necessary deamons realted to the jail, after the module itself is started. It should clean up after itself (e.g. kill all deamons started) upon receiving a SIGINT.
+jaildir=$WFDR_JAILDIR
+moddir=$WFDR_MODDIR
+modname=$WFDR_MODNAME
+cachedir=cache
+
+wfdr-cache-monitor -sourcedir="$moddir/tmpl" -destdir="$jaildir/tmpl" -filetype="tmpl" -mode="deamon" &
+tmplmon=$!
+
+wfdr-cache-monitor -sourcedir="$moddir/css" -destdir="$cachedir/css" -destsubfolder="$modname" -filetype="css" -mode="deamon" &
+cssmon=$!
+
+wfdr-cache-monitor -sourcedir="$moddir/js" -destdir="$cachedir/js" -destsubfolder="$modname" -filetype="js" -mode="deamon" &
+jsmon=$!
+
+trap "kill $tmplmon" SIGINT
+trap "kill $cssmon" SIGINT
+trap "kill $jsmon" SIGINT

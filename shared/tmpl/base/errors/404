@@ -1,0 +1,14 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+    <div class="content-text">
+        <h1>Page not found (404)</h1>
+        <p>Oh no! The requested page doesn't exist! Try checking the spelling of the URL. If you think that this is an error on the part of the geeks who run this site, feel free to <a href="/contact">complain</a> to them.</p>
+        <p><br /></p>
+
+        <h2>Technical information</h2>
+        <p>There is no dynamic server registered to handle requests to that URL. The URL is not a file this server has been configured to serve. The module provided the following details: {{Object}}</p>
+    </div>
+{{>body-end}}
+{{>html-end}}

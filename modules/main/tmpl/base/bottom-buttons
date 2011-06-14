@@ -1,0 +1,26 @@
+
+<table id="bottom-buttons" class="clearfix">
+<tr>
+<td class="events">
+<a href="/events" class="clearfix">
+<img src="/img/calender-icon.png" alt="Events" />
+<h3>Upcoming events</h3>
+<p>View upcoming events and activities, and sync organization calendars with your personal Google calendar.</p>
+</a>
+</td>
+<td class="ideas">
+<a href="/photos" class="clearfix">
+<img src="/img/photos.png" alt="Photos" />
+<h3>Photos from previous events</h3>
+<p>Browse photos from past organization events and upload new ones.</p>
+</a>
+</td>
+<td>
+<a href="/news" class="clearfix">
+<img src="/img/news.png" alt="News" />
+<h3>News and articles</h3>
+<p>Read news and articles published by organization members.</p>
+</a>
+</td>
+</tr>
+</table>

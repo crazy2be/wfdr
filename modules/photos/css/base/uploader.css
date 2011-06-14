@@ -1,0 +1,94 @@
+.draganddrop .html5-not-supported {
+	display: none;
+}
+#tip {
+	font-size: .8em;
+	margin: .2em;
+}
+.no-draganddrop #tip {
+	display: none;
+}
+.error {
+	color: red;
+}
+#photos-upload-progress {
+	width: 100%;
+}
+#photos-upload-progress-outer {
+	display: none;
+}
+.photo-upload-progress {
+	height: 2px;
+	width: 100%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+}
+.close, .retry {
+	display: block;
+	cursor: pointer;
+}
+.error-message {
+	display: inline;
+}
+.dropped-image-actions {
+	float: left;
+	display: none;
+}
+.drop {
+	min-height: 15em;
+	border: 5px dashed grey;
+	text-align: center;
+}
+.drop h1 {
+	margin-top: 3em;
+	color: grey;
+}
+.no-draganddrop .drop {
+	border: 1px solid red;
+	border-width: 1px 0px;
+	background-color: #F99;
+	min-height: auto;
+	padding: 1em;
+	color: black;
+	text-align: left;
+}
+.no-draganddrop .drop h1 {
+	display: none;
+}
+.drop-over {
+	border-color: black;
+}
+.drop-over h1 {
+	color: black;
+}
+.dropped-image {
+	display: inline;
+	float: left;
+	position: relative;
+	min-width: 20%;
+	max-width: 33%;
+}
+.dropped-image-inner {
+	padding: 1em;
+	border: 1px solid transparent;
+}
+.dropped-image-complete .dropped-image-inner {
+	border: 1px solid #AFA;
+	background-color: #DFD;
+	opacity: 1;
+}
+.dropped-image-complete progress {
+	display: none;
+}
+.dropped-image-error {
+	width: 50%;
+}
+.dropped-image-error .dropped-image-inner {
+	border: 1px solid red;
+	background-color: #ff9999;
+}
+.dropped-image-error .photo-upload-progress {
+	display: none;
+}

@@ -1,0 +1,116 @@
+/*
+    anythingSlider v1.2
+    
+    By Chris Coyier: http://css-tricks.com
+    with major improvements by Doug Neiner: http://pixelgraphics.us/
+    based on work by Remy Sharp: http://jqueryfordesigners.com/
+*/
+
+
+.anythingSlider {
+height: 300px;
+position: relative;
+}
+.anythingSlider .wrapper {
+height: 300px;
+margin: 0 40px;
+position: absolute;
+top: 0;
+left: -40px;
+right: -40px;
+width: 100%;
+overflow: hidden;
+/*border-top: 3px solid #e0a213;*/
+/* border-bottom: 3px solid #e0a213; */
+}
+.anythingSlider .wrapper ul {
+list-style: none;
+/* Height below is max for Opera */
+height: 32700px;
+background: #eee;
+overflow-x: hidden;
+}
+.anythingSlider ul li {
+height: 300px;
+}
+.anythingSlider .image {
+   position: relative;
+   height: 100%;
+   width: 100%; /* for IE 6 */
+}
+.anythingSlider .image img {
+  position: absolute;
+}
+.anythingSlider .image img.left {
+  left: 0px;
+}
+.anythingSlider .image img.right {
+  right: 0px;
+}
+.anythingSlider h2 {
+   position: absolute;
+   width: 100%;
+}
+.anythingSlider h2.bottom {
+   bottom: 20px;
+}
+.anythingSlider h2.top {
+   top: 20px;
+}
+.anythingSlider h2.left {
+   left: 0;
+}
+.anythingSlider h2.right {
+   right: 0;
+   text-align: right;
+}
+.anythingSlider h2 span {
+   padding: 10px;
+   margin: 0;
+   color: white;
+   font: bold 24px/45px Helvetica, Sans-Serif;
+   letter-spacing: -1px;
+   background: rgb(0, 0, 0); /* fallback color */
+   background: rgba(0, 0, 0, 0.7);
+}
+.anythingSlider h2 span.spacer {
+   /*padding:0 2px;*/
+   background: transparent;
+   padding: 0px;
+   width: 8px;
+}
+.anythingSlider .wrapper ul ul {
+position: static;
+margin: 0;
+background: none;
+overflow: visible;
+width: auto;
+border: 0;
+}
+.anythingSlider .wrapper ul ul li {
+float: none;
+height: auto;
+width: auto;
+background: none;
+}
+.anythingSlider .arrow {
+/*display: block;
+height: 200px;
+width: 67px;
+background: url(../img/arrows.png) no-repeat 0 0;*/
+text-indent: -9999px;
+position: absolute;
+top: 65px;
+cursor: pointer;
+z-index: 2;
+}
+.anythingSlider .back {
+/*left: 45%;
+top: -50px;
+background-position: -67px 0;*/
+/*background-image: url(../img/stock_back.svg);*/
+}
+.anythingSlider .forward {
+right: 45%;
+top: +175px;
+}

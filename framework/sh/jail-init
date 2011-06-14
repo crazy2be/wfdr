@@ -1,0 +1,70 @@
+#!/bin/bash
+# This script is run to initialize the jail, before the module itself (run script) is started. Functions in here should *never* hang, or the module will never be started.
+jaildir=$WFDR_JAILDIR
+moddir=$WFDR_MODDIR
+modname=$WFDR_MODNAME
+cachedir=cache
+cwd=`pwd`
+
+# Copy binaries
+if [ -d $moddir/bin ]; then
+	mkdir -p $jaildir/bin
+	cp -rp $moddir/bin $jaildir
+fi
+mkdir -p $jaildir/sh
+if [ -d $moddir/sh ]; then
+	cp -rp $moddir/sh $jaildir
+fi
+if [ -f $moddir/run ]; then
+	cp -rp $moddir/run $jaildir
+fi
+
+# Link libraries for python stuff.
+ln -sf $cwd/shared/lib $jaildir
+
+# Copy templates
+mkdir -p $jaildir/tmpl/desktop
+mkdir -p $jaildir/tmpl/mobile
+
+wfdr-cache-monitor -sourcedir="$moddir/tmpl" -destdir="$jaildir/tmpl" -filetype="tmpl" -mode="sync"
+
+# Link the shared directories
+ln -sf $cwd/cache/tmpl/desktop $jaildir/tmpl/desktop/shared
+ln -sf $cwd/cache/tmpl/mobile $jaildir/tmpl/mobile/shared
+
+# Copy css/js
+wfdr-cache-monitor -sourcedir="$moddir/css" -destdir="$cachedir/css" -destsubfolder="$modname" -filetype="css" -mode="sync"
+
+wfdr-cache-monitor -sourcedir="$moddir/js" -destdir="$cachedir/js" -destsubfolder="$modname" -filetype="js" -mode="sync"
+
+# Copy data
+mkdir -p $jaildir/data
+if [ -d $moddir/data ]; then
+	cp -rp $moddir/data $jaildir
+fi
+
+# Link "special" data folders
+# Note here the order of the arguments: All of the data *stays* in data/, but the various other programs have the ability to find and serve that data. Thus, removind the data folder works as expected, removing it will remove all of the user-generated data. Furthermore, backing up the folder will work properly.
+mkdir -p $jaildir/data/tmpl/base
+ln -sf $jaildir/data/tmpl/base $jaildir/tmpl/desktop/data
+ln -sf $jaildir/data/tmpl/base $jaildir/tmpl/mobile/data
+for filetype in img js css; do
+	mkdir -p $jaildir/data/$filetype/base
+	
+	mkdir -p $cachedir/$filetype/desktop/$modname
+	mkdir -p $cachedir/$filetype/mobile/$modname
+	
+	ln -sf $jaildir/data/$filetype/base $cachedir/$filetype/desktop/$modname/data
+	ln -sf $jaildir/data/$filetype/base $cachedir/$filetype/mobile/$modname/data
+done
+
+# Link shared data directory
+ln -sf $cwd/shared/data $jaildir/data/shared
+
+# Make log folder
+mkdir -p $jaildir/log
+
+# TODO: Should this be here?
+if [ "$modname" = "base" ]; then
+	ln -sf $cwd/cache $jaildir
+fi

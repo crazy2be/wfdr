@@ -1,0 +1,17 @@
+#bottom-buttons {
+  background: #ffc842;
+  overflow: hidden;
+}
+
+#google-search-button {
+  width: 20%;
+  font-size: 1em;
+  height: 3em;
+}
+
+#google-search input {
+	width: 80%;
+	border: 0;
+  height: 3em;
+}
+

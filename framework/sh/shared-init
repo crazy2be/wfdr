@@ -1,0 +1,16 @@
+#!/bin/bash
+# Used to reload all of the "shared" resources, stored in shared/.
+
+mkdir -p cache/tmpl
+mkdir -p cache/css
+mkdir -p cache/js
+
+echo "Syncing shared resources..."
+wfdr-cache-monitor -sourcedir="shared/tmpl" -destdir="cache/tmpl" -filetype="tmpl" -mode="sync";
+#echo "Syncing shared css..."
+wfdr-cache-monitor -sourcedir="shared/css" -destdir="cache/css" -filetype="css" -mode="sync";
+#echo "Syncing shared images..."
+wfdr-cache-monitor -sourcedir="shared/img" -destdir="cache/img" -filetype="img" -mode="sync";
+#echo "Syncing shared javascript..."
+wfdr-cache-monitor -sourcedir="shared/js" -destdir="cache/js" -filetype="js" -mode="sync";
+echo "Done syncing all shared resources!"

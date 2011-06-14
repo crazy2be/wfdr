@@ -1,0 +1,42 @@
+#wrapper {
+  min-width: 40em;
+}
+#content-inner, #header-inner, #footer-inner {
+  min-width: 40em;
+  max-width: 60em;
+  margin-left: auto;
+  margin-right: auto;
+}
+#navigation li a:hover {
+	background: url('/img/hover-tab.png') no-repeat;
+  background-position: 50% 100%;
+}
+
+#navigation li a.current {
+  background: url("/img/current-tab.png") no-repeat;
+	background-position: 50% 100%;
+}
+#links li a {
+	float: left;
+	border-right: 1px solid #fff;
+}
+/* Account menu */
+#account li a {
+	float: right;
+	border-right: none;
+}
+
+/* For those people that don't have JavaScript enabled. */
+#js-warning {
+  background-color: #000064;
+}
+#js-warning-inner {
+  padding: 1em;
+}
+
+#js-warning p {
+  margin: 0px;
+  padding: 0px;
+  font-weight: bold;
+  color: #FFFFFF;
+}

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+destdir=`dirname $WFDR_DEST`
+
+mkdir -p $destdir
+
+
+if [ -f $WFDR_SOURCE_1 ]; then
+	sources=$WFDR_SOURCE_1
+fi
+
+if [ -f $WFDR_SOURCE_2 ]; then
+	sources+=$WFDR_SOURCE_2
+fi
+
+# TODO: Pipe this through a minifier. Can't do it right now because all the tinymce stuff is in js/, and not all of it is js.
+cat $sources > $WFDR_DEST

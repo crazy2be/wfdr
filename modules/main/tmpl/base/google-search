@@ -1,0 +1,11 @@
+<div id="google-search-container" class="clearfix">
+  <form action="http://www.google.ca/search" name="f" class="clearfix">
+    <input name="btnG" id="google-search-button" type="submit" value="Google Search" />
+    <div id="google-search">
+      <input id="google-search-bar" autocomplete="off" maxlength="2048" name="q" title="Google Search" spellcheck="false" class="google-textbox" />
+    </div>
+  </form>
+</div>
+<div id="google-search-results">
+
+</div>

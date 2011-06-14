@@ -1,0 +1,20 @@
+{{>html-header}}
+{{>head-header}}
+{{>head-end}}
+{{>body-header}}
+	{{#Object}}
+<ul class="toolbar clearfix">
+{{#Perms}}
+	{{#Write}}
+		<li><a href="/events/edit/{{ID}}">Edit</a></li>
+	{{/Write}}
+{{/Perms}}
+</ul>
+<div class="content-text">
+		{{#PageData}}
+			{{{Content}}}
+		{{/PageData}}
+</div>
+	{{/Object}}
+{{>body-end}}
+{{>html-end}}

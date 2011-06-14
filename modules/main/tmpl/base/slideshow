@@ -1,0 +1,14 @@
+<div class="anythingSlider"> 
+  <div class="wrapper">
+    <ul>
+      <li>
+        <div class="image">
+          <img class="right" src="/img/vanilla-event.jpg" alt="WFDR Base Install" />
+          <h2 class="bottom left">
+            <span>You imagined. We delivered.</span>
+          </h2>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>

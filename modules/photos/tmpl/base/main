@@ -1,0 +1,29 @@
+ 	{{>html-header}}
+{{>head-header}}
+<link rel="stylesheet" type="text/css" href="/css/chunks/photo-list.css" />
+{{>head-end}}
+{{>body-header}}
+{{#Perms}}
+{{#Write}}
+	<ul class="clearfix toolbar">
+		<li>
+			<a href="/photos/upload">Upload Photos</a>
+		</li>
+	</ul>
+{{/Write}}
+{{/Perms}}
+	<div class="albums photo-list clearfix">
+		{{#Object}}
+			<div class="album photo-list-item">
+				<a href="{{Link}}">
+					<div class="text">
+						<h3>{{Title}}</h3>
+						<p>{{Summary}}</p>
+					</div>
+					<img src="{{Url}}" alt="{{Summary}}" />
+				</a>
+			</div>
+		{{/Object}}
+	</div>
+{{>body-end}}
+{{>html-end}}

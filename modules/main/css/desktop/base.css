@@ -1,0 +1,100 @@
+#bottom-buttons {
+	display: block;
+	border-collapse: collapse;
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0.92, rgb(255,255,255)),
+		color-stop(0, rgb(255,215,114))
+	);
+	background-image: -moz-linear-gradient(
+		center bottom,
+		rgb(255,215,114),
+		rgb(255,255,255));
+}
+
+#bottom-buttons td {
+	width: 33.3333333%;
+}
+
+#bottom-buttons td:hover {
+	-moz-box-shadow: inset 0 0 10px #d59600;
+	-webkit-box-shadow: inset 0 0 10px #d59600;
+	box-shadow: inset 0 0 10px #d59600;
+
+}
+#bottom-buttons td a {
+	display: block;
+  padding: 1em;
+	border-bottom: none;
+}
+#bottom-buttons img {
+	border: 0;
+  float: right;
+}
+#bottom-buttons h3 {
+	font-size: 1em;
+}
+#bottom-buttons p {
+	color: black;
+	font-weight: normal;
+	font-size: .8em;
+}
+#google-search-button {
+  -webkit-appearance: default-button;
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(1, rgb(221,221,221)),
+    color-stop(0, rgb(204,204,204))
+  );
+  background-image: -moz-linear-gradient(
+    center bottom,
+    rgb(221,221,221) 100%,
+    rgb(204,204,204) 0%
+  );
+  font-family: arial, sans-serif;
+  font-size: 15px;
+  height: 30px;
+  border: 0px solid white;
+  width: 159px;
+  -webkit-box-shadow: -1px -1px 1px #7d7d7d inset;
+  -moz-box-shadow: inset -1px -1px 1px #7d7d7d;
+}
+
+#google-search-button:active {
+  background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0, rgb(221,221,221)),
+    color-stop(1, rgb(204,204,204))
+  );
+  background-image: -moz-linear-gradient(
+    center bottom,
+    rgb(221,221,221) 0%,
+    rgb(204,204,204) 100%
+  );
+  -webkit-box-shadow: 1px 1px 1px #7d7d7d inset;
+  -moz-box-shadow: inset 1px 1px 1px #7d7d7d;
+}
+
+#google-search {
+  margin-right: 10em;
+}
+
+#google-search-bar {
+	width: 100%;
+	border: 1px solid #ccc;
+    outline:none;
+    -webkit-appearance: textfield;
+    height: 29px;
+    -webkit-box-shadow: -1px -1px 1px #7d7d7d inset;
+    -moz-box-shadow: inset -1px -1px 1px #7d7d7d;
+}
+
+#google-search-container {
+	background: #fff;
+}

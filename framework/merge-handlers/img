@@ -1,0 +1,16 @@
+#!/bin/bash
+# TODO: Allow a imagemagic script as a file in a custom layout folder, so that you can apply a series of changes to the base image file automatically each time it is changed.
+
+destdir=`dirname $WFDR_DEST`
+
+mkdir -p $destdir
+
+if [ -f $WFDR_SOURCE_1 ]; then
+	cat $WFDR_SOURCE_1 > $WFDR_DEST
+	exit
+fi
+
+if [ -f $WFDR_SOURCE_2 ]; then
+	cat $WFDR_SOURCE_2 > $WFDR_DEST
+	exit
+fi
