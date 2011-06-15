@@ -111,7 +111,7 @@ func (v *Visitor) InotifyLoop() {
 				//os.Exit(0)
 				v.WatcherEvent(ev)
 			case sig := <-signal.Incoming:
-				switch (sig.(signal.UnixSignal)) {
+				switch (sig.(os.UnixSignal)) {
 				// SIGINT, SIGKILL, SIGTERM
 				case 0x02, 0x09, 0xf:
 					v.watcher.Close()
@@ -231,5 +231,5 @@ func (v *Visitor) ReloadFile(layout string) {
 		log.Println("Failed to run command", cmd, ":", err)
 		return
 	}
-	proc.Close()
+	proc.Wait()
 }

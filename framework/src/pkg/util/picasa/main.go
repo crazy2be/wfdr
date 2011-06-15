@@ -83,8 +83,11 @@ func SendTo(req *http.Request, conn net.Conn) (e os.Error) {
 
 func ReadFrom(conn net.Conn, method string) (resp *http.Response, e os.Error) {
 	// Read from and proccess the connection
+	req := new(http.Request)
+	req.Method = method
+	
 	reader := bufio.NewReader(conn)
-	resp, e = http.ReadResponse(reader, method)
+	resp, e = http.ReadResponse(reader, req)
 	if e != nil {
 		fmt.Println("Error reading response:", e)
 	}

@@ -11,7 +11,6 @@ pkg/util/time\
 pkg/util/http\
 pkg/util/session\
 pkg/util/user\
-pkg/util/browser\
 pkg/util/perms\
 pkg/util/paths\
 pkg/util/fnotify\

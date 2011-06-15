@@ -1,8 +1,7 @@
-package template
 // Allows one to transpose data structures to html content through templates, allowing the designers to work at least somewhat seperately from the programmers.
+package template
 
-// TODO List:
-// - Add caching in production configuration, or in both if you can hook in with inotify to automatically update the cache when a file is updated. Look at os/inoify.
+// TODO: Add caching in production configuration, or in both if you can hook in with inotify to automatically update the cache when a file is updated. Look at os/inoify.
 
 import (
 	"http"
@@ -16,7 +15,7 @@ import (
 	// Local packages.
 	dlog "util/dlog"
 	"util/perms"
-	"util/browser"
+	"github.com/crazy2be/browser"
 	"util/fnotify"
 )
 

@@ -54,7 +54,7 @@ func main() {
 	
 	for {
 		sig := <-signal.Incoming
-		switch (sig.(signal.UnixSignal)) {
+		switch (sig.(os.UnixSignal)) {
 			// SIGINT, SIGKILL, SIGTERM
 			case 0x02, 0x09, 0xf:
 				Exit(0)

@@ -1,4 +1,4 @@
-// Utility functions for functionality you would expect to find in the os package, such as running programs and testing if files exist.
+// Utility functions for functionality you would expect to find in the os package, such as running programs and testing if files exist. Most of the program running functions are deprecaiated now that the exec package has been updated in the latest weekly.
 package osutil
 
 import (
@@ -79,21 +79,30 @@ func findCmd(PATH, cmd string) (string, os.Error) {
 
 func RunWithEnvAndWd(command string, args []string, env []string, wd string) (proc *exec.Cmd, err os.Error) {
 	//log.Println(command, args)
-	hho := exec.PassThrough
+	//hho := exec.PassThrough
 	args = prepend(args, command)
 	env = mergeEnv(os.Environ(), env)
+	
 	
 	binpath, err := findCmd(findEnv(env, "PATH"), command)
 	if err != nil {
 		return nil, err
 	}
 	
-	proc, err = exec.Run(binpath, args, env, wd, hho, hho, hho)
+	cmd := new(exec.Cmd)
+	cmd.Path   = binpath
+	cmd.Args   = args
+	cmd.Env    = env
+	cmd.Dir    = wd
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	
+	err = cmd.Start()
 	if err != nil {
 		log.Print("Error running command ", command, ": ", err, "\n")
 		return nil, err
 	}
-	return
+	return cmd, nil
 }
 
 // More advanced, runs a program with a custom enviroment. Note that the normal enviroment is also passed here, as that is what is typically desired. Enviroment is a slice of strings, with each string usually having the form "NAME=VALUE". If you pass an enviroment string of the form NAME=VALUE that has the same name as an existing enviroment string, your value overwrites the value of the other variable.
@@ -112,7 +121,7 @@ func WaitRun(command string, args []string) (proc *exec.Cmd, err os.Error) {
 	if err != nil {
 		return
 	}
-	proc.Close()
+	proc.Wait()
 	return
 }
 

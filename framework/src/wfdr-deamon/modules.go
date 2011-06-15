@@ -71,7 +71,7 @@ func JailInit(moddir, jaildir, modname string) (os.Error) {
 	if err != nil {
 		return os.NewError(fmt.Sprint("Could not run script to initialize jail:", err, " PATH:", os.Getenv("PATH")))
 	}
-	setup.Close()
+	setup.Wait()
 	return nil
 }
 
@@ -130,7 +130,7 @@ func StartModule(name string) (*Module, os.Error) {
 		if err != nil {
 			return nil, os.NewError(fmt.Sprint("Error copying default run file, cannot continue:", err))
 		}
-		cp.Close()
+		cp.Wait()
 	}
 
 	modulep, err := osutil.RunWithEnvAndWd("run", []string{name}, []string{"PATH=" + path}, jaildir)
