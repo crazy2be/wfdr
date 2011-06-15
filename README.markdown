@@ -17,7 +17,6 @@ Features
 
 Getting Started
 ---------------
-The WFDR framework is designed to be simple to get started with, and should work with whatever your favorite HTTP library is.
 
     git clone git://github.com/crazy2be/wfdr.git
     cd wfdr
@@ -33,6 +32,8 @@ If all goes well, you should now be able to navigate to http://localhost:8080/ a
 
 What's Next?
 ------------
+The WFDR framework is designed to be simple to get started with, and should work with whatever your favorite HTTP library is.
+
 Check out [the wiki](https://github.com/crazy2be/wfdr/wiki) for documentation on how the framework works.
 
 The [HelloWorld tutorial](https://github.com/crazy2be/wfdr/wiki/HelloWorldTutorial) is a good place to go if you want to start writing a module.
