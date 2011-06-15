@@ -42,5 +42,6 @@ If all goes well, you should now be able to navigate to http://localhost:8080/ a
 
 What's Next?
 ------------
-Check out the wiki for documentation on how the framework works: https://github.com/crazy2be/wfdr/wiki
-The HelloWorld tutorial is probably a good place to go if you want to write a module: https://github.com/crazy2be/wfdr/wiki/HelloWorldTutorial
+Check out [the wiki](https://github.com/crazy2be/wfdr/wiki) for documentation on how the framework works.
+
+The [HelloWorld tutorial](https://github.com/crazy2be/wfdr/wiki/HelloWorldTutorial) is probably a good place to go if you want to write a module.
