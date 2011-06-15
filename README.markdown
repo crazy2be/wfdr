@@ -18,10 +18,11 @@ Features
 
  -  Language-agnostic
  -  Highly flexible
- -  Automatic mobile and desktop [https://github.com/crazy2be/wfdr/wiki/Layouts layouts]
+ -  Automatic mobile and desktop [layouts](https://github.com/crazy2be/wfdr/wiki/Layouts)
  -  Distributed
- -  [https://github.com/crazy2be/wfdr/wiki/Jails Secure isolation system].
- -  Works with any http library or template library, although possibly not as well.
+ -  [Secure isolation system](https://github.com/crazy2be/wfdr/wiki/Jails)
+ -  Based on the principle of least privilege
+ -  Works with any http library or template library, although possibly not as well
 
 Getting Started
 ---------------
