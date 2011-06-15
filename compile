@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+import math
+import subprocess
 
 class bcolors:
     HEADER = '\033[95m'
@@ -18,31 +20,60 @@ class bcolors:
         self.FAIL = ''
         self.ENDC = ''
         
+def header(text):
+	rows, columns = os.popen('stty size', 'r').read().split()
+	
+	divider = "+"
+	for i in range(int(columns)-2):
+		divider += "-"
+	divider += "+"
+	padding = ""
+	paddinglen = (float(columns)-(2+len(text)))
+	extrapad = " " if paddinglen % 2 else ""
+	for i in range(int(paddinglen/2)):
+		padding += " "
+	print bcolors.OKGREEN + divider
+	print "|" + padding + extrapad + text + padding + "|"
+	print divider + bcolors.ENDC
+	
+def step(text):
+	print bcolors.OKBLUE + "[...] " + text + bcolors.ENDC
+	
+def run(cmd, message):
+	proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	stdout, stderr = proc.communicate()
+	if proc.returncode:
+		print bcolors.FAIL + "Failed to run command {0}, exit status {1}! Below is the output:".format(cmd, proc.returncode) + bcolors.ENDC
+		print stdout
+		print stderr
+		print bcolors.FAIL + message + bcolors.ENDC
+	return proc.returncode
+
+# First, install everything required
+step("Fetching required packages with goinstall")
+
+f = open('framework/src/goinstalls')
+for line in f:
+	if run('goinstall '+line, "Failed to goinstall package!"):
+		sys.exit(1)
+
+# Next, compile framework packages and commands
+step("Compiling framework packages and commands")
+
 os.chdir('framework/src')
 
-if os.system('gomake'):
-	print bcolors.FAIL + "Build failed :(" + bcolors.ENDC
+if run('gomake', "Build failed :("):
 	sys.exit(1)
 
 os.chdir('../..')
 
-if os.system('wfdr compile all'):
-	print bcolors.WARNING + "Compiling modules failed" + bcolors.ENDC
+# Finally, compile the actual modules
+step("Compiling modules")
+
+if run('wfdr compile all', "Compiling modules failed"):
 	print "Because it might be a module you don't care about, we're continuing happily :)"
 	print "Although you might want to look into the issue..."
-	#sys.exit(0)
-	
-rows, columns = os.popen('stty size', 'r').read().split()
 
-header = ""
-for i in range(int(columns)-2):
-	header += "-"
-header = "+" + header + "+"
-divider = ""
-for i in range((int(columns)-8)/2):
-	divider += " "
-print bcolors.OKGREEN + header
-print "|" + divider + " DONE!" + divider + "|"
-print header + bcolors.ENDC
+header("DONE!")
 print "Framework has been built! To run it, start the daemon in one terminal using wfdr-deamon [sic], and then control modules using the wfdr command."
 print "wfdr start <modulename> starts a module, wfdr stop <modulename> stops, etc. Run wfdr with no arguments to see usage."
