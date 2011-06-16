@@ -15,6 +15,7 @@ framework/src/*/*
 !framework/src/bug-testcases/*
 framework/src/automatic-builds/*~
 framework/src/pkg/util/diff/godiff
+framework/src/pkg/util/diff/diff
 util/pipe-test/pipe-test
 # A bunch of other things to ignore.
 *~
