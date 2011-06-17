@@ -8,7 +8,6 @@ pkg/util/ini\
 pkg/util/json\
 pkg/util/iomod\
 pkg/util/time\
-pkg/util/http\
 pkg/util/session\
 pkg/util/user\
 pkg/util/perms\

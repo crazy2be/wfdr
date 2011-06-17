@@ -13,7 +13,7 @@ import (
 	// Local Imports
 	"util/dlog"
 	"util/ini"
-	httputil "util/http"
+	"github.com/crazy2be/httputil"
 )
 
 // The lastID given out. Since all IDs are assigned in numeric order, this should ensure there are no collisions.
@@ -34,14 +34,15 @@ func Get(c http.ResponseWriter, r *http.Request) (s *Session) {
 
 // Same as above, but only gets a session if one exists, and does not attempt to create one.
 func GetExisting(r *http.Request) (s *Session, e os.Error) {
-	cookies := httputil.GetCookies(r)
-	sid, ok := cookies["Sessionid"]
-	if !ok {
+	cookie := httputil.FindCookie(r, "sessionid")
+	
+	if cookie == nil {
 		e = os.NewError("No sessionid found!")
 		fmt.Println(e)
 		return
 	}
 	
+	sid := cookie.Value
 	id, e := strconv.Atoi64(sid)
 	s, e = GetFromID(id)
 	return

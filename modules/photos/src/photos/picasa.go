@@ -54,13 +54,13 @@ func init() {
 			time.Sleep(1000e9) // 1000 seconds.
 			
 			// Why, you may ask, is this down here? Well, because i don't want to have to wait for all of the photos to load each time i start the module for debugging.
-			hho := exec.PassThrough
-			updater, err := exec.Run("bin/picasa-updater", []string{"picasa-updater"}, nil, "", hho, hho, hho)
+			updater := exec.Command("bin/picasa-updater")
+			err := updater.Run()
 			if err != nil {
 				fmt.Println("Error running photos updater:", err)
 				continue
 			}
-			updater.Close()
+			updater.Wait()
 		}
 	}()
 }

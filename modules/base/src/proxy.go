@@ -16,8 +16,8 @@ import (
 	"json"
 	// Local imports
 	tmpl "util/template"
-	httputil "util/http"
-	"util/browser"
+	"github.com/crazy2be/httputil"
+	"github.com/crazy2be/browser"
 )
 
 var Servers = make(map[string]string, 10)
@@ -127,12 +127,14 @@ func handleRequest(c net.Conn, bufreader *bufio.Reader) (info *logInfo, e os.Err
 	SubURL := strings.Split(req.URL.Path, "/", -1)[1]
 	// Check if the request URL matches one of the defined "file" URLs on the system. If it does, serve right away without any additional checks (for speed).
 	if SubURL == "favicon.ico" {
-		httputil.ServeFile(c, "img/favicon.ico", req)
+		respwr := httputil.NewHttpResponseWriter(c)
+		httputil.ServeFileOnly(respwr, req, "img/favicon.ico")
 	}
 	for _, path := range FileDirs {
 		if path == SubURL {
 			path := getFilePath(req)
-			info.Extra, _ = httputil.ServeFile(c, path, req)
+			respwr := httputil.NewHttpResponseWriter(c)
+			httputil.ServeFileOnly(respwr, req, path)
 			return
 		}
 	}
@@ -198,7 +200,7 @@ func dialServer(c net.Conn, r *http.Request, addr string) {
 	serverconnbuf := bufio.NewReader(serverconn)
 	fmt.Println("Reading response")
 	
-	resp, e := http.ReadResponse(serverconnbuf, r.Method)
+	resp, e := http.ReadResponse(serverconnbuf, r)
 	if e != nil {
 		error503(c, r, e)
 		return

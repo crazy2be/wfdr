@@ -2,6 +2,7 @@
 import os
 import sys
 import math
+import argparse
 import subprocess
 
 class bcolors:
@@ -54,6 +55,11 @@ def run(cmd, message):
 		print bcolors.FAIL + message + bcolors.ENDC
 	return proc.returncode
 
+# Check args
+makeact=''
+if len(sys.argv) > 1:
+	makeact = ' ' + sys.argv[1]
+
 # First, install everything required
 step("Fetching required packages with goinstall")
 
@@ -67,7 +73,7 @@ step("Compiling framework packages and commands")
 
 os.chdir('framework/src')
 
-if run('gomake', "Build failed :("):
+if run('gomake' + makeact, "Build failed :("):
 	sys.exit(1)
 
 os.chdir('../..')
