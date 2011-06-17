@@ -10,10 +10,11 @@ There's a million different web frameworks out there, each for a different langu
 Features
 --------
 
- -  Although several features only have bindings for go, implementing them for other languages would be trivial. Most of the code does not deal with language specific features. As such, it is fair to say that the framework is **Language-agnostic**.
- -  Automatic mobile and desktop **layouts**, allowing you to customize only the exact functionality or HTML you wish to customize. [More on layouts...](https://github.com/crazy2be/wfdr/wiki/Layouts)
- -  Isolation and separation of independent sections of a site. This separation occurs both in the source code ([more on modules](https://github.com/crazy2be/wfdr/wiki/Modules)), and at runtime ([more on jails](https://github.com/crazy2be/wfdr/wiki/Jails)). Additionally, the runtime environment (jail) is completely separated from the development environment. A bug in one module will not affect other modules.
- -  Heavily customizable thanks to a design inspired by UNIX and git. 
+ -  **Serves Files**: Static (or dynaically generated!) js, css, and image files are automatically served by the framework for you.
+ -  **Customizable Layouts**: Customize as little or as much as you want between mobile and desktop clients, with more to come. [(More on layouts)](https://github.com/crazy2be/wfdr/wiki/Layouts)
+ -  **Language Agnostic**: Although several features only have bindings for go, implementing them for other languages would be trivial.
+ -  **Encourages Modular Design**: Each *Module* consists of an isolated and separated section of a site. This separation occurs both in the source code ([more on modules](https://github.com/crazy2be/wfdr/wiki/Modules)), and at runtime ([more on jails](https://github.com/crazy2be/wfdr/wiki/Jails)). A bug in one module will leave other modules completely unaffected.
+ -  **Customizable**: Easy to understand and hack, thanks to a design inspired by UNIX and git.
 
 Getting Started
 ---------------
