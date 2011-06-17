@@ -38,15 +38,8 @@ def header1(text):
 	print divider + bcolors.ENDC
 
 def header2(text):
-	#rows, columns = os.popen('stty size', 'r').read().split()
-	lines = ''
-	for i in range(len(text)+2):
-		lines += '*'
 	print
 	print bcolors.BOLD + bcolors.OKGREEN + "==[ " + text + " ]==" + bcolors.ENDC
-	#print bcolors.BOLD + bcolors.OKGREEN + "*" + lines + "*"
-	#print "* " + text + " *"
-	#print "*" + lines + "*" + bcolors.ENDC
 	
 def step(text):
 	print bcolors.OKBLUE + "[...] " + text + bcolors.ENDC
