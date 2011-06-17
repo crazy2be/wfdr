@@ -13,7 +13,7 @@ Features
  -  **Serves Files**: Static (or dynaically generated!) js, css, and image files are automatically served by the framework for you.
  -  **Customizable Layouts**: Customize as little or as much as you want between mobile and desktop clients, with more to come. [(More on layouts)](https://github.com/crazy2be/wfdr/wiki/Layouts)
  -  **Language Agnostic**: Although several features only have bindings for go, implementing them for other languages would be trivial.
- -  **Encourages Modular Design**: Each *Module* consists of an isolated and separated section of a site. This separation occurs both in the source code ([more on modules](https://github.com/crazy2be/wfdr/wiki/Modules)), and at runtime ([more on jails](https://github.com/crazy2be/wfdr/wiki/Jails)). A bug in one module will leave other modules completely unaffected.
+ -  **Encourages Modular Design**: Each *Module* consists of an isolated and functionally independent section of a site. This separation occurs both in the source code ([more on modules](https://github.com/crazy2be/wfdr/wiki/Modules)), and at runtime ([more on jails](https://github.com/crazy2be/wfdr/wiki/Jails)). A bug in one module will leave other modules completely unaffected.
  -  **Leaves You Alone**: Does not force you to write your module as a library, use heavily hacked and customized http libraries, or any other uglyness. The only library that is highly reccommended (any only for modules with a UI) is the template library, based on mustache.
  -  **Customizable**: Easy to understand and hack, thanks to a design inspired by UNIX and git.
 
