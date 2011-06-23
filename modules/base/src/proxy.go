@@ -121,7 +121,7 @@ func handleRequest(c net.Conn, bufreader *bufio.Reader) (info *logInfo, e os.Err
 	info = new(logInfo)
 	info.Path = req.URL.Path
 	info.Source = c.RemoteAddr().String()
-	info.Referrer = req.Referer
+	info.Referrer = req.Referer()
 	info.ReqTime = time.Nanoseconds()
 	// The first directory, Split splits it a request for /css/main.css into "", "css", and "main.css".
 	SubURL := strings.Split(req.URL.Path, "/", -1)[1]
@@ -194,12 +194,12 @@ func dialServer(c net.Conn, r *http.Request, addr string) {
 	r.Proto = "HTTP/1.0"
 	r.ProtoMinor = 0
 	r.Header.Del("Connection")
-	
+
 	fmt.Println("Writing data to server")
 	r.Write(serverconn)
 	serverconnbuf := bufio.NewReader(serverconn)
 	fmt.Println("Reading response")
-	
+
 	resp, e := http.ReadResponse(serverconnbuf, r)
 	if e != nil {
 		error503(c, r, e)
