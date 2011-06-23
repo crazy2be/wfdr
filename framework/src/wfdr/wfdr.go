@@ -7,9 +7,9 @@ import (
 	"os"
 	"log"
 	"fmt"
+	"exec"
 	"io/ioutil"
 	// Local imports
-	"util/osutil"
 	"util/moduled"
 )
 
@@ -50,16 +50,31 @@ func main() {
 	moduleAction(module, action)
 }
 
+func mustRun(name string, args ...string) {
+	cmd := exec.Command(name, args...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err == nil {
+		return
+	}
+	ws, ok := err.(*os.Waitmsg)
+	if !ok {
+		os.Exit(1)
+	}
+	os.Exit(ws.ExitStatus())
+}
+
 func moduleAction(module, action string) {
 	var err os.Error
 	os.Setenv("PATH", os.Getenv("PATH")+":framework/sh:framework/bin")
 	switch action {
 		case "stop", "start", "restart":
-			_, err = osutil.WaitRun("wfdr-module-manager", []string{"-action="+action, "-modulename="+module})
+			mustRun("wfdr-module-manager", "-action="+action, "-modulename="+module)
 		case "compile":
-			_, err = osutil.WaitRun("wfdr-compile", []string{module})
+			mustRun("wfdr-compile", module)
 		case "recompile":
-			_, err = osutil.WaitRun("wfdr-compile", []string{module, "-recompile"})
+			mustRun("wfdr-compile", module, "-recompile")
 		case "status":
 			fmt.Println("Not implemented!")
 		case "list":

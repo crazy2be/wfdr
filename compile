@@ -73,15 +73,18 @@ for line in f:
 	if run(cmd+' '+line, "Failed to goinstall package!"):
 		sys.exit(1)
 
-# Next, compile framework packages and commands
-step("Compiling framework packages and commands")
 
 os.chdir('framework/src')
 
-mkcmd = 'gomake'
 if args.clean:
-	mkcmd += ' clean'
-if run(mkcmd, "Build failed :("):
+	step("Cleaning existing framework pacakges and commands")
+	if run('gomake clean', 'Cleaning existing packages failed!'):
+		print "Continuing happily..."
+
+# Next, compile framework packages and commands
+step("Compiling framework packages and commands")
+
+if run('gomake', "Build failed :("):
 	sys.exit(1)
 
 os.chdir('../..')
@@ -89,15 +92,16 @@ os.chdir('../..')
 # Finally, compile the actual modules
 step("Compiling modules")
 
-if run('wfdr compile all', "Compiling modules failed"):
-	print "Because it might be a module you don't care about, we're continuing happily :)"
-	print "Although you might want to look into the issue..."
+wfdrcmd = 'compile'
+if args.clean:
+	wfdrcmd = 'recompile'
+
+if run('wfdr '+wfdrcmd+' all', "Attempting to "+wfdrcmd+" modules failed"):
+	sys.exit(1)
+	#print "Because it might be a module you don't care about, we're continuing happily :)"
+	#print "Although you might want to look into the issue..."
 
 
 header2("DONE!")
-
-if args.clean:
-	print "Run ./compile without --clean again in order to actually *build* the framework."
-else:
-	print "Framework has been built! To run it, start the daemon in one terminal using wfdr-deamon [sic], and then control modules using the wfdr command."
-	print "wfdr start <modulename> starts a module, wfdr stop <modulename> stops, etc. Run wfdr with no arguments to see usage."
+print "Framework has been built! To run it, start the daemon in one terminal using wfdr-deamon [sic], and then control modules using the wfdr command."
+print "wfdr start <modulename> starts a module, wfdr stop <modulename> stops, etc. Run wfdr with no arguments to see usage."
