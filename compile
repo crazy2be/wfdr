@@ -56,16 +56,21 @@ def run(cmd, message):
 	return proc.returncode
 
 # Check args
-makeact=''
-if len(sys.argv) > 1:
-	makeact = ' ' + sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument('--update', const=True, default=False, action='store_const', help="Update all goinstalled packages before the build process. Might be helpful if you are getting build errors.")
+parser.add_argument('--clean', const=True, default=False, action='store_const', help="Rather than building, clean all files from the build. Comparable to running make clean for the framework and each module.")
+
+args = parser.parse_args()
 
 # First, install everything required
 step("Fetching required packages with goinstall")
 
 f = open('framework/src/goinstalls')
 for line in f:
-	if run('goinstall '+line, "Failed to goinstall package!"):
+	cmd = "goinstall"
+	if args.update:
+		cmd += " -u"
+	if run(cmd+' '+line, "Failed to goinstall package!"):
 		sys.exit(1)
 
 # Next, compile framework packages and commands
@@ -73,7 +78,10 @@ step("Compiling framework packages and commands")
 
 os.chdir('framework/src')
 
-if run('gomake' + makeact, "Build failed :("):
+mkcmd = 'gomake'
+if args.clean:
+	mkcmd += ' clean'
+if run(mkcmd, "Build failed :("):
 	sys.exit(1)
 
 os.chdir('../..')
@@ -85,6 +93,11 @@ if run('wfdr compile all', "Compiling modules failed"):
 	print "Because it might be a module you don't care about, we're continuing happily :)"
 	print "Although you might want to look into the issue..."
 
+
 header2("DONE!")
-print "Framework has been built! To run it, start the daemon in one terminal using wfdr-deamon [sic], and then control modules using the wfdr command."
-print "wfdr start <modulename> starts a module, wfdr stop <modulename> stops, etc. Run wfdr with no arguments to see usage."
+
+if args.clean:
+	print "Run ./compile without --clean again in order to actually *build* the framework."
+else:
+	print "Framework has been built! To run it, start the daemon in one terminal using wfdr-deamon [sic], and then control modules using the wfdr command."
+	print "wfdr start <modulename> starts a module, wfdr stop <modulename> stops, etc. Run wfdr with no arguments to see usage."
