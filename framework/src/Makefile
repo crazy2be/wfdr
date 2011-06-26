@@ -4,11 +4,8 @@ DIRS=\
 pkg/util/dlog\
 pkg/util/osutil\
 pkg/util/pipes\
-pkg/util/ini\
-pkg/util/json\
 pkg/util/iomod\
 pkg/util/time\
-pkg/util/session\
 pkg/util/user\
 pkg/util/perms\
 pkg/util/paths\

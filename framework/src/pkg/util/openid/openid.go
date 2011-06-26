@@ -196,7 +196,7 @@ func (o *OpenID) VerifyDirect() (grant bool, err os.Error) {
 		grant, err = regexp.Match("is_valid:true", buffer)
 		fmt.Printf("Response: %v\n", grant)
 	}else {
-		err = os.ErrorString("No response from POST verification")
+		err = os.NewError("No response from POST verification")
 		return
 	}
 

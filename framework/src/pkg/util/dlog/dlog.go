@@ -1,4 +1,5 @@
 // A simple debug logging package that provides facilities for logging things to a logfile.
+// DEPRECATED! Just use the log package directly...
 package dlog
 
 import (

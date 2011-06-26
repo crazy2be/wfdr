@@ -5,8 +5,8 @@ import (
 	"http"
 	"os"
 	// Local imports
-	"util/ini"
-	"util/session"
+	"github.com/crazy2be/ini"
+	"github.com/crazy2be/session"
 )
 
 type User struct {

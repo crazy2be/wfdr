@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"sort"
 	// Local imports
-	"util/session"
+	"github.com/crazy2be/session"
 )
 
 // TODO: Do we want more permissions here?

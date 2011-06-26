@@ -46,7 +46,7 @@ func searchHTMLMeta(r io.Reader) (string, os.Error) {
 			}
 		}
 	}
-	return "",os.ErrorString("Value not found")
+	return "", os.NewError("Value not found")
 }
 
 func Yadis(url string) (io.Reader, os.Error) {

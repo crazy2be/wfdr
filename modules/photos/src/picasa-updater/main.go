@@ -19,7 +19,7 @@ import (
 	"util/picasa"
 	"util/iomod"
 	"util/time"
-	jsonutil "util/json"
+	"github.com/crazy2be/jsonutil"
 )
 // The URL to request the albums from. Note that ?alt=json is added to this.
 const userFeedURL = "http://picasaweb.google.com/data/feed/api/user/default"

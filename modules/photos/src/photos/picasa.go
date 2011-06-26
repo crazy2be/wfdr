@@ -21,7 +21,7 @@ import (
 	"util/user"
 	"util/picasa"
 	"util/iomod"
-	jsonutil "util/json"
+	"github.com/crazy2be/jsonutil"
 )
 
 // Defined like this so that moving the actual definitions to an external file doesn't break things.

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	// Local imports
 	"util/openid"
-	"util/session"
+	"github.com/crazy2be/session"
 )
 
 func Handler(c http.ResponseWriter, r *http.Request) {
