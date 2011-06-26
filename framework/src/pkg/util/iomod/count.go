@@ -1,6 +1,5 @@
+// Provides a utility functions for modification of byte steams
 package iomod
-
-// Provides a few basic utility funcitons and types for man-in-the-middle byte counting.
 
 import (
 	"io"
@@ -8,6 +7,7 @@ import (
 	"fmt"
 )
 
+// ReadCounter allows counting of the number of bytes read from a reader without control of the underlying reader.
 type ReadCounter struct {
 	Count int
 	reader io.Reader
@@ -20,7 +20,6 @@ func (r *ReadCounter) Read(b []byte) (n int, e os.Error) {
 }
 
 func NewReadCounter(reader io.Reader) (r* ReadCounter) {
-	fmt.Println("What?")
 	r = new(ReadCounter)
 	r.reader = reader
 	r.Count = 0
