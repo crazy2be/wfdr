@@ -10,15 +10,12 @@ import (
 	"json"
 	"fmt"
 	"time"
-"flag"	
-//"sort"
+	"flag"
 	"strings"
 	"strconv"
-	//"strings"
-	//"regexp"
 	"util/picasa"
-	"util/iomod"
 	"util/time"
+	"github.com/crazy2be/iomod"
 	"github.com/crazy2be/jsonutil"
 )
 // The URL to request the albums from. Note that ?alt=json is added to this.

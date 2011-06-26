@@ -20,7 +20,7 @@ import (
 	"util/template"
 	"util/user"
 	"util/picasa"
-	"util/iomod"
+	"github.com/crazy2be/iomod"
 	"github.com/crazy2be/jsonutil"
 )
 
