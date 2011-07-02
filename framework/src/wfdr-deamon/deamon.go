@@ -13,7 +13,7 @@ import (
 	"path"
 	// Local imports
 	"util/dlog"
-	"util/osutil"
+	"github.com/crazy2be/osutil"
 	"util/pipes"
 )
 

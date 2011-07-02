@@ -2,7 +2,6 @@ include $(GOROOT)/src/Make.inc
 
 DIRS=\
 pkg/util/dlog\
-pkg/util/osutil\
 pkg/util/pipes\
 pkg/util/user\
 pkg/util/perms\

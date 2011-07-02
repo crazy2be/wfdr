@@ -18,7 +18,7 @@ import (
 	"os/inotify"
 	"path/filepath"
 	// Local imports
-	"util/osutil"
+	"github.com/crazy2be/osutil"
 )
 
 var dlog *log.Logger

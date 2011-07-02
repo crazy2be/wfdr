@@ -8,7 +8,7 @@ import (
 	"syscall"
 	// Local imports
 	"util/dlog"
-	"util/osutil"
+	"github.com/crazy2be/osutil"
 )
 
 type Module struct {

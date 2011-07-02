@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 	// Local imports
-	"util/osutil"
+	"github.com/crazy2be/osutil"
 )
 
 type PipeReadWriteCloser struct {
