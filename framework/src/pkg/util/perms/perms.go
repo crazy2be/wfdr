@@ -1,7 +1,8 @@
-package perms
-// IN PROGRESS, IMCOMPLETE!
+// IN PROGRESS, INCOMPLETE!
 // A simple authentication module that supports user and group based authentication methods, with users authenticated via e-mail addresses.
-// In order to use it, you pass a http.Request and a 
+// In order to use it, you pass a http.Request to the Get() function, which returns the permissions of the current user based on the most permissive interpretation of their permissions and the permissions of their group.
+// Uses the session library key "openid-email" to get the name of the user we are currently serving.
+package perms
 
 import (
 	"http"

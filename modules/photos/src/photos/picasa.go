@@ -18,8 +18,8 @@ import (
 	// Local imports
 	"util/dlog"
 	"util/template"
-	"util/user"
 	"util/picasa"
+	"github.com/crazy2be/user"
 	"github.com/crazy2be/iomod"
 	"github.com/crazy2be/jsonutil"
 )

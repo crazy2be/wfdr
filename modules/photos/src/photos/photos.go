@@ -4,7 +4,7 @@ import (
   "http"
   "fmt"
 	// Local imports
-	"util/user"
+	"github.com/crazy2be/user"
   tmpl "util/template"
 )
 

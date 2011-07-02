@@ -3,7 +3,6 @@ include $(GOROOT)/src/Make.inc
 DIRS=\
 pkg/util/dlog\
 pkg/util/pipes\
-pkg/util/user\
 pkg/util/perms\
 pkg/util/paths\
 pkg/util/fnotify\
