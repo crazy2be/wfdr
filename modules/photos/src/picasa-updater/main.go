@@ -1,9 +1,7 @@
-// This package is a bit confusing, and could use some cleanup... It was originally designed to be part of the server and included as a package, but memory leaks in the runtime have forced it to become it's own executable.
+// Updates the photo lists from picasa, translating the picasa-style JSON to include only the fields that the photos module requires.
 package main
 
 import (
-	//"http"
-	//"bufio"
 	"io"
 	"os"
 	"log"
@@ -13,8 +11,8 @@ import (
 	"flag"
 	"strings"
 	"strconv"
+	// Local imports
 	"util/picasa"
-	"util/time"
 	"github.com/crazy2be/iomod"
 	"github.com/crazy2be/jsonutil"
 )
@@ -234,7 +232,7 @@ func getPhotos(albumid string) (photos []Photo, e os.Error) {
 		photo.Thumbnails.Small = g.MediaSthumbnail[0]
 		photo.Thumbnails.Medium = g.MediaSthumbnail[1]
 		photo.Thumbnails.Large = g.MediaSthumbnail[2]
-		var modified, e = parsetime.Parse(entry.Updated.ST)
+		var modified, e = picasa.ParseTimestamp(entry.Updated.ST)
 		if e != nil {
 			fmt.Printf("WARNING: Error parsing time string %s with format %s: %s", entry.Updated.ST, jsonTimeFormat, e) 
 		} else {

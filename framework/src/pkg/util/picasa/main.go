@@ -1,6 +1,8 @@
 package picasa
 
 import (
+	"strings"
+	"strconv"
 	"bufio"
 	"http"
 	"time"
@@ -15,6 +17,7 @@ type PhotoGroup struct {
 	Date   time.Time
 	Photos []Photo
 }
+
 type Photo struct {
 	Title      string
 	Summary    string
@@ -31,6 +34,7 @@ type Photo struct {
 		}
 	}
 }
+
 type Album struct {
 	Title     string
 	Summary   string
@@ -39,6 +43,25 @@ type Album struct {
 	Url       string // Cover Image URL
 	Modified  time.Time
 	Published time.Time
+}
+
+// Parses a timestamp of the format 2011-05-25T12:50:49 (as returned by picasa) into a time.Time object.
+func ParseTimestamp(timestamp string) (d time.Time, e os.Error) {
+	// Splits into time and date parts
+	var dateTime = strings.Split(timestamp, "T", -1)
+	// Splits off the timezone
+	//var timeZone = strings.Split(dateTime[1], "Z", -1)
+	// Parse the date
+	var date = strings.Split(dateTime[0], "-", -1)
+	d.Year, _ = strconv.Atoi64(date[0])
+	d.Month, _ = strconv.Atoi(date[1])
+	d.Day, _ = strconv.Atoi(date[2])
+	// Parse the time
+	var time = strings.Split(dateTime[1], ":", -1)
+	d.Hour, _ = strconv.Atoi(time[0])
+	d.Minute, _ = strconv.Atoi(time[1])
+	d.Second, _ = strconv.Atoi(time[2])
+	return
 }
 
 // HTTP utility functions that really don't belong in this module, but are here until some other module needs them or someone moves them..

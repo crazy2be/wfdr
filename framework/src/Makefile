@@ -4,7 +4,6 @@ DIRS=\
 pkg/util/dlog\
 pkg/util/osutil\
 pkg/util/pipes\
-pkg/util/time\
 pkg/util/user\
 pkg/util/perms\
 pkg/util/paths\
