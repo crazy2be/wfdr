@@ -5,7 +5,7 @@ import (
 	"fmt"
 	// Local imports
 	"util/template"
-	"util/perms"
+	"github.com/crazy2be/perms"
 	"util/pages"
 	//"util/dlog"
 )

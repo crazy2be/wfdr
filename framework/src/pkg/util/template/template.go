@@ -14,7 +14,7 @@ import (
 	"strings"
 	// Local packages.
 	dlog "util/dlog"
-	"util/perms"
+	"github.com/crazy2be/perms"
 	"github.com/crazy2be/browser"
 	"util/fnotify"
 )
@@ -62,7 +62,7 @@ func Render(c io.Writer, r *http.Request, title, name string, data interface{}) 
 	// Removed the modulename because it's not needed in the new framework. However, this will break things in the old framework. *sigh*...
 	p.Name = /*moduleName + "/" + */name
 	p.Request = r
-	perms := perms.Get(r)
+	perms, _ := perms.Get(r)
 	p.Perms = perms
 	p.Object = data
 	
