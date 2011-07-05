@@ -31,7 +31,9 @@ def header1(text):
 	divider += "+"
 	padding = ""
 	paddinglen = (float(columns)-(2+len(text)))
-	extrapad = " " if paddinglen % 2 else ""
+	extrapad = ""
+	if paddinglen % 2:
+		extrapad = " "
 	for i in range(int(paddinglen/2)):
 		padding += " "
 	print bcolors.OKGREEN + divider
