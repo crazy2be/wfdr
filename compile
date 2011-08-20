@@ -21,7 +21,57 @@ class bcolors:
         self.WARNING = ''
         self.FAIL = ''
         self.ENDC = ''
-        
+
+class ArgumentParser:
+	__parsedargs__ = {}
+	__givenargs__ = {}
+	def AddFlag(self, name, help):
+		item = {}
+		item['help'] = help
+		item['type'] = bool
+		item['default'] = False
+		self.__givenargs__[name] = item
+		
+	def __argname__(self, arg):
+		return arg.replace("-", "")
+		
+	def __isarg__(self, name):
+		for k, v in self.__givenargs__.iteritems():
+			if k == name:
+				return True
+		return False
+		
+	def __requiresval__(self, name):
+		if self.__givenargs__[name]['type'] == bool:
+			return False
+		return True
+		
+	def Parse(self):
+		parsingArg = False
+		for i, arg in enumerate(sys.argv[1:]):
+			name = self.__argname__(arg)
+			if self.__isarg__(name):
+				if parsingArg:
+					raise Exception("Expected value, got another argument")
+				if self.__requiresval__(name):
+					parsingArg = True
+				else:
+					self.__parsedargs__[name] = True
+			else:
+				if not parsingArg:
+					raise Exception("Expected argument, got another value")
+				self.__parsedargs__[self.__argname(sys.argv[i-1])] = sys.argv[i]
+		
+		print self.__givenargs__
+		for k, v in self.__givenargs__.iteritems():
+			if k not in self.__parsedargs__:
+				self.__parsedargs__[k] = v['default']
+
+		return self.__parsedargs__
+				
+	def __getitem__(self, name):
+		return self.__arr__[name]
+
 def header1(text):
 	rows, columns = os.popen('stty size', 'r').read().split()
 	
@@ -58,11 +108,12 @@ def run(cmd, message):
 	return proc.returncode
 
 # Check args
-parser = argparse.ArgumentParser()
-parser.add_argument('--update', const=True, default=False, action='store_const', help="Update all goinstalled packages before the build process. Might be helpful if you are getting build errors.")
-parser.add_argument('--clean', const=True, default=False, action='store_const', help="Rather than building, clean all files from the build. Comparable to running make clean for the framework and each module.")
+parser = ArgumentParser()
+parser.AddFlag('update', help="Update all goinstalled packages before the build process. Might be helpful if you are getting build errors.")
+parser.AddFlag('clean', help="Rather than building, clean all files from the build. Comparable to running make clean for the framework and each module.")
 
-args = parser.parse_args()
+args = parser.Parse()
+print args
 
 # First, install everything required
 step("Fetching required packages with goinstall")
@@ -70,15 +121,17 @@ step("Fetching required packages with goinstall")
 f = open('framework/src/goinstalls')
 for line in f:
 	cmd = "goinstall"
-	if args.update:
+	if args['update']:
 		cmd += " -u"
+	if args['clean']:
+		cmd += ' -clean'
 	if run(cmd+' '+line, "Failed to goinstall package!"):
 		sys.exit(1)
 
 
 os.chdir('framework/src')
 
-if args.clean:
+if args['clean']:
 	step("Cleaning existing framework pacakges and commands")
 	if run('gomake clean', 'Cleaning existing packages failed!'):
 		print "Continuing happily..."
@@ -95,7 +148,7 @@ os.chdir('../..')
 step("Compiling modules")
 
 wfdrcmd = 'compile'
-if args.clean:
+if args['clean']:
 	wfdrcmd = 'recompile'
 
 if run('wfdr '+wfdrcmd+' all', "Attempting to "+wfdrcmd+" modules failed"):

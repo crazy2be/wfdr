@@ -36,10 +36,10 @@ func main() {
 		"picasa": ":8090",
 		"events": ":8130",
 		// Main module (front page)
-		"": ":8140",
-		"pages": ":8150",
+		"":       ":8140",
+		"pages":  ":8150",
 		"openid": ":8160",
-		"news": ":8170",
+		"news":   ":8170",
 	}
 	listener, e := net.Listen("tcp", ":8080")
 	if e != nil {
@@ -79,7 +79,7 @@ func main() {
 func getFilePath(r *http.Request) string {
 	path := r.URL.Path[1:]
 	if browser.IsMobile(r) {
-		pathsec := strings.Split(path, "/", 2)
+		pathsec := strings.SplitN(path, "/", 2)
 
 		if len(pathsec) < 2 {
 			return path
@@ -93,7 +93,7 @@ func getFilePath(r *http.Request) string {
 			return mobpath
 		}
 	} else {
-		pathsec := strings.Split(path, "/", 2)
+		pathsec := strings.SplitN(path, "/", 2)
 
 		if len(pathsec) < 2 {
 			return path
@@ -124,7 +124,7 @@ func handleRequest(c net.Conn, bufreader *bufio.Reader) (info *logInfo, e os.Err
 	info.Referrer = req.Referer()
 	info.ReqTime = time.Nanoseconds()
 	// The first directory, Split splits it a request for /css/main.css into "", "css", and "main.css".
-	SubURL := strings.Split(req.URL.Path, "/", -1)[1]
+	SubURL := strings.Split(req.URL.Path, "/")[1]
 	// Check if the request URL matches one of the defined "file" URLs on the system. If it does, serve right away without any additional checks (for speed).
 	if SubURL == "favicon.ico" {
 		respwr := httputil.NewHttpResponseWriter(c)

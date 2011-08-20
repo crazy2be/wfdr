@@ -48,16 +48,16 @@ type Album struct {
 // Parses a timestamp of the format 2011-05-25T12:50:49 (as returned by picasa) into a time.Time object.
 func ParseTimestamp(timestamp string) (d time.Time, e os.Error) {
 	// Splits into time and date parts
-	var dateTime = strings.Split(timestamp, "T", -1)
+	var dateTime = strings.Split(timestamp, "T")
 	// Splits off the timezone
 	//var timeZone = strings.Split(dateTime[1], "Z", -1)
 	// Parse the date
-	var date = strings.Split(dateTime[0], "-", -1)
+	var date = strings.Split(dateTime[0], "-")
 	d.Year, _ = strconv.Atoi64(date[0])
 	d.Month, _ = strconv.Atoi(date[1])
 	d.Day, _ = strconv.Atoi(date[2])
 	// Parse the time
-	var time = strings.Split(dateTime[1], ":", -1)
+	var time = strings.Split(dateTime[1], ":")
 	d.Hour, _ = strconv.Atoi(time[0])
 	d.Minute, _ = strconv.Atoi(time[1])
 	d.Second, _ = strconv.Atoi(time[2])
@@ -108,7 +108,7 @@ func ReadFrom(conn net.Conn, method string) (resp *http.Response, e os.Error) {
 	// Read from and proccess the connection
 	req := new(http.Request)
 	req.Method = method
-	
+
 	reader := bufio.NewReader(conn)
 	resp, e = http.ReadResponse(reader, req)
 	if e != nil {
