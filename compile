@@ -2,7 +2,6 @@
 import os
 import sys
 import math
-import argparse
 import subprocess
 
 class bcolors:
@@ -62,7 +61,6 @@ class ArgumentParser:
 					raise Exception("Expected argument, got another value")
 				self.__parsedargs__[self.__argname(sys.argv[i-1])] = sys.argv[i]
 		
-		print self.__givenargs__
 		for k, v in self.__givenargs__.iteritems():
 			if k not in self.__parsedargs__:
 				self.__parsedargs__[k] = v['default']
@@ -113,7 +111,6 @@ parser.AddFlag('update', help="Update all goinstalled packages before the build 
 parser.AddFlag('clean', help="Rather than building, clean all files from the build. Comparable to running make clean for the framework and each module.")
 
 args = parser.Parse()
-print args
 
 # First, install everything required
 step("Fetching required packages with goinstall")
