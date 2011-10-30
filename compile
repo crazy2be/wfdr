@@ -155,5 +155,5 @@ if run('wfdr '+wfdrcmd+' all', "Attempting to "+wfdrcmd+" modules failed"):
 
 
 header2("DONE!")
-print "Framework has been built! To run it, start the daemon in one terminal using wfdr-deamon [sic], and then control modules using the wfdr command."
+print "Framework has been built! To run it, start the daemon in one terminal using wfdr-daemon, and then control modules using the wfdr command."
 print "wfdr start <modulename> starts a module, wfdr stop <modulename> stops, etc. Run wfdr with no arguments to see usage."
