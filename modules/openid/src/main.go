@@ -3,6 +3,7 @@ package main
 import (
 	"http"
 	"fmt"
+	"url"
 	// Local imports
 	"util/openid"
 	"github.com/crazy2be/session"
@@ -11,7 +12,7 @@ import (
 func Handler(c http.ResponseWriter, r *http.Request) {
 	host := r.Host
 	s := session.Get(c, r)
-	query, _ := http.ParseQuery(r.URL.RawQuery)
+	query, _ := url.ParseQuery(r.URL.RawQuery)
 	continueURLS := query["continue-url"]
 	continueURL := ""
 	if len(continueURLS) >= 1 {
@@ -23,7 +24,7 @@ func Handler(c http.ResponseWriter, r *http.Request) {
 	fmt.Println(continueURL)
 	s.Set("openid-continue-url", continueURL)
 	fmt.Println(s.Get("openid-name-first"))
-	url := "https://www.google.com/accounts/o8/ud"
+	baseUrl := "https://www.google.com/accounts/o8/ud"
 	var urlParams = map[string]string {
 		"openid.ns": "http://specs.openid.net/auth/2.0",
 		"openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select",
@@ -45,11 +46,11 @@ func Handler(c http.ResponseWriter, r *http.Request) {
 		"openid.oauth.scope": "http://picasaweb.google.com/data/" }
 	queryURL := "?"
 	for name, value := range(urlParams) {
-		queryURL += http.URLEscape(name) + "=" + http.URLEscape(value) + "&"
+		queryURL += url.QueryEscape(name) + "=" + url.QueryEscape(value) + "&"
 	}
 	queryURL = queryURL[0:len(queryURL)-1]
 	fmt.Println(queryURL)
-	http.Redirect(c, r, url+queryURL, 307)
+	http.Redirect(c, r, baseUrl+queryURL, 307)
 }
 
 func AuthHandler(c http.ResponseWriter, r *http.Request) {
@@ -72,10 +73,10 @@ func AuthHandler(c http.ResponseWriter, r *http.Request) {
 	fmt.Println(o)
 	wantedValues := []string{"value.email", "value.first", "value.last", "value.country", "value.lang"}
 	for _, wantedValue := range(wantedValues) {
-		value, _ := http.URLUnescape(o.Params["openid.ext1."+wantedValue])
+		value, _ := url.QueryUnescape(o.Params["openid.ext1."+wantedValue])
 		s.Set("openid-"+wantedValue[len("value."):], value)
 	}
-	id, _ := http.URLUnescape(o.Params["openid.ext1.value.email"])
+	id, _ := url.QueryUnescape(o.Params["openid.ext1.value.email"])
 	continueURL := s.Get("openid-continue-url")
 	if continueURL == "" {
 		continueURL = "/"

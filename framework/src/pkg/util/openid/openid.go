@@ -7,8 +7,9 @@ import (
 	"os"
 	"bytes"
 	"http"
+	"url"
 	"strings"
-	)
+)
 
 const (
 	_ = iota
@@ -177,7 +178,7 @@ func (o *OpenID) VerifyDirect() (grant bool, err os.Error) {
 	headers := make(http.Header, 1)
 	headers.Add("Content-Type", "application/x-www-form-urlencoded")
 	
-	url,_ := http.URLUnescape(o.Params["openid.op_endpoint"])
+	url,_ := url.QueryUnescape(o.Params["openid.op_endpoint"])
 	fmt.Printf("Verification: %s\nParams: %s\n",url, mapToUrlEnc(o.Params))
 	r,error := post(url,
 		headers,

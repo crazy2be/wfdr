@@ -11,7 +11,7 @@ pkg/util/picasa\
 pkg/util/pages\
 pkg/util/moduled\
 wfdr\
-wfdr-deamon\
+wfdr-daemon\
 wfdr-cache-monitor\
 wfdr-module-manager\
 css-preprocessor\

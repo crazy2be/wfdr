@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"fmt"
+	"url"
 	"time"
 	"http"
 	"mime"
@@ -78,7 +79,7 @@ func GetPhotos(albumname string) []Photo {
 func AuthHandler(c http.ResponseWriter, r* http.Request) {
 	// Get the token supplied in the URL.
 	picasaLen := len("token=")
-	url, _ := http.URLUnescape(r.URL.RawQuery)
+	url, _ := url.QueryUnescape(r.URL.RawQuery)
 	token := url[picasaLen:]
 	fmt.Println(token, r.URL.RawQuery)
 	

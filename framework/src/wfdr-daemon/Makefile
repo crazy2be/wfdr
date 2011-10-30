@@ -1,8 +1,8 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=wfdr-deamon
+TARG=wfdr-daemon
 GOFILES=\
-deamon.go\
+daemon.go\
 modules.go
 
 include $(GOROOT)/src/Make.cmd

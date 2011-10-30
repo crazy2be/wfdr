@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"http"
 	"time"
+	"url"
 	"net"
 	"fmt"
 	"os"
@@ -66,10 +67,10 @@ func ParseTimestamp(timestamp string) (d time.Time, e os.Error) {
 
 // HTTP utility functions that really don't belong in this module, but are here until some other module needs them or someone moves them..
 
-func NewRequest(url, authToken, method string) (req *http.Request) {
+func NewRequest(surl, authToken, method string) (req *http.Request) {
 	req = new(http.Request)
-	req.RawURL = url
-	req.URL, _ = http.ParseURL(req.RawURL)
+	req.RawURL = surl
+	req.URL, _ = url.Parse(req.RawURL)
 	req.Method = method
 	req.Header = make(map[string][]string)
 	// Set the authorization header with the token (required for picasa authentication).

@@ -5,6 +5,7 @@ import (
 	"os"
 	"io"
 	"net"
+	"url"
 	"encoding/base64"
 	"strings"
 	"bufio"
@@ -13,14 +14,14 @@ import (
 
 
 // get Taken from the golang source modifed to allow headers to be passed and no redirection allowed
-func get(url string, headers http.Header) (r *http.Response, err os.Error) {
+func get(surl string, headers http.Header) (r *http.Response, err os.Error) {
 
 	var req http.Request
 	if err != nil {
 		return
 	}
 	req.Header = headers
-	req.URL, err = http.ParseURL(url)
+	req.URL, err = url.Parse(surl)
 
 	r, err = send(&req)
 	if err != nil {
@@ -30,7 +31,7 @@ func get(url string, headers http.Header) (r *http.Response, err os.Error) {
 }
 
 // post taken from Golang modified to allow Headers to be pased
-func post(url string, headers http.Header, body io.Reader) (r *http.Response, err os.Error) {
+func post(surl string, headers http.Header, body io.Reader) (r *http.Response, err os.Error) {
 	var req http.Request
 	req.Method = "POST"
 	req.ProtoMajor = 1
@@ -40,7 +41,7 @@ func post(url string, headers http.Header, body io.Reader) (r *http.Response, er
 	req.Header = headers
 	req.TransferEncoding = []string{"chunked"}
 
-	req.URL, err = http.ParseURL(url)
+	req.URL, err = url.Parse(surl)
 	if err != nil {
 		return nil, err
 	}
