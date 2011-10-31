@@ -15,10 +15,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: wfdr <action> [<modulename>]...")
-		fmt.Println("	Action can be one of stop, start, restart, compile, recompile, status, or list.")
-		fmt.Println("	(status is not implemented)")
-		fmt.Println("	modulename can be the name of any installed module, or 'all' to take an action on all modules. Multiple names can be specified, seperated by spaces. (e.g. wfdr start auth base main)")
+		printHelp()
 		os.Exit(0)
 	}
 	action := os.Args[1]
@@ -48,6 +45,13 @@ func main() {
 	}
 	
 	moduleAction(module, action)
+}
+
+func printHelp() {
+	fmt.Println("Usage: wfdr <action> [<modulename>]...")
+	fmt.Println("	Action can be one of stop, start, restart, compile, recompile, status, or list.")
+	fmt.Println("	(status is not implemented)")
+	fmt.Println("	modulename can be the name of any installed module, or 'all' to take an action on all modules. Multiple names can be specified, seperated by spaces. (e.g. wfdr start auth base main)")
 }
 
 func mustRun(name string, args ...string) {
@@ -105,6 +109,8 @@ func moduleAction(module, action string) {
 			}
 		default:
 			log.Fatal("Unrecognized command ", action)
+			printHelp()
+			os.Exit(1)
 	}
 	if err != nil {
 		log.Fatal(err)
