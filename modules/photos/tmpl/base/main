@@ -1,4 +1,4 @@
- 	{{>html-header}}
+{{>html-header}}
 {{>head-header}}
 <link rel="stylesheet" type="text/css" href="/css/chunks/photo-list.css" />
 {{>head-end}}
