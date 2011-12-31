@@ -15,6 +15,7 @@ wfdr-daemon\
 wfdr-cache-monitor\
 wfdr-module-manager\
 css-preprocessor\
+tmpl-preprocessor\
 
 all: install
 

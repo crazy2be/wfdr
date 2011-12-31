@@ -1,21 +1,21 @@
-all: commentstrip varfinder whitespacerm
+all: css-commentstrip css-varfinder css-whitespacerm
 
-commentstrip: comment-stripper.c
-	gcc -o commentstrip comment-stripper.c
+css-commentstrip: comment-stripper.c
+	gcc -o css-commentstrip comment-stripper.c
 
-varfinder: variable-finder.c
-	gcc -o varfinder variable-finder.c
+css-varfinder: variable-finder.c
+	gcc -o css-varfinder variable-finder.c
 
-whitespacerm: whitespace-remover.c
-	gcc -o whitespacerm whitespace-remover.c
+css-whitespacerm: whitespace-remover.c
+	gcc -o css-whitespacerm whitespace-remover.c
 
 install: all
 	mkdir -p ../../bin
-	cp commentstrip ../../bin/
-	cp varfinder ../../bin/
-	cp whitespacerm ../../bin
+	cp css-commentstrip ../../bin/
+	cp css-varfinder ../../bin/
+	cp css-whitespacerm ../../bin
 
 clean:
-	rm commentstrip
-	rm varfinder
-	rm whitespacerm
+	rm css-commentstrip
+	rm css-varfinder
+	rm css-whitespacerm

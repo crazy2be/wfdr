@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ "$WFDR_CONTEXT" = "debug" ]; then
+	cat -
+elif [ "$WFDR_CONTEXT" = "test" ]; then
+	cat - | tmpl-whitespacerm
+elif [ "$WFDR_CONTEXT" = "prod" ]; then
+	cat - | tmpl-commentstrip | tmpl-whitespacerm
+else
+	echo "WARNING: Unrecognized WFDR_CONTEXT $WFDR_CONTEXT"
+fi

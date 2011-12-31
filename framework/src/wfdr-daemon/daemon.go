@@ -27,12 +27,20 @@ func main() {
 	
 	os.MkdirAll("cache", 0755)
 	
-	var inpipe, outpipe string
+	var inpipe, outpipe, context string
 
 	flag.StringVar(&inpipe, "inpipe", "cache/wfdr-deamon-pipe-in", "Name of a file that should be used for a input IPC pipe. Should not exist.")
 	flag.StringVar(&outpipe, "outpipe", "cache/wfdr-deamon-pipe-out", "Name of a file that should be used for an output IPC pipe. Should not exist.")
-
+	flag.StringVar(&context, "context", "debug", "Context to run the daemon and child processes from. Valid choices are 'debug', 'test' and 'prod'.")
+	
 	flag.Parse()
+	
+	if context != "debug" && context != "test" && context != "prod" {
+		log.Println("Invalid context argument provided!")
+		log.Fatal(flag.Lookup("context").Usage)
+	}
+	
+	os.Setenv("WFDR_CONTEXT", context)
 	
 	if osutil.FileExists(inpipe) || osutil.FileExists(outpipe) {
 		log.Fatal("Pipe files already exist, the daemon is likely already running. However, it is also possible that the daemon was not cleanly shut down on its last run, and the files linger. If you suspect this to be the case, remove cache/wfdr-deamon-pipe-in and cache/wfdr-deamon-pipe-out, then try starting the daemon again.")

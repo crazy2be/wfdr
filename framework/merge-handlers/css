@@ -14,4 +14,8 @@ if [ -f $WFDR_SOURCE_2 ]; then
 fi
 
 #echo $sources
-cat $sources | varfinder global.txt | minifier > $WFDR_DEST
+if [ "$WFDR_CONTEXT" = "prod" ]; then
+	cat $sources | css-varfinder global.txt | css-minifier > $WFDR_DEST
+else
+	cat $sources | css-varfinder global.txt > $WFDR_DEST
+fi
