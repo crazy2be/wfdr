@@ -34,7 +34,6 @@ int main() {
 			int TAG_MAX_LENGTH = 2048;
 			char tagName[TAG_MAX_LENGTH];
 			int tagLen = tagContent(&tagName, TAG_MAX_LENGTH);
-			fprintf(stderr, "Tag content: %s\n", tagName);
 			assert(tagLen < TAG_MAX_LENGTH);
 			if (startsWith(tagName, TAG_MAX_LENGTH, "pre", 3)) {
 				rmwhitespace = 0;
