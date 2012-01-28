@@ -1,20 +1,19 @@
 package openid
 
 import (
-	"http"
-	"os"
+	"bufio"
+
+	"crypto/tls"
+	"encoding/base64"
 	"io"
 	"net"
-	"url"
-	"encoding/base64"
+	"net/http"
+	"net/url"
 	"strings"
-	"bufio"
-	"crypto/tls"
 )
 
-
 // get Taken from the golang source modifed to allow headers to be passed and no redirection allowed
-func get(surl string, headers http.Header) (r *http.Response, err os.Error) {
+func get(surl string, headers http.Header) (r *http.Response, err error) {
 
 	var req http.Request
 	if err != nil {
@@ -31,7 +30,7 @@ func get(surl string, headers http.Header) (r *http.Response, err os.Error) {
 }
 
 // post taken from Golang modified to allow Headers to be pased
-func post(surl string, headers http.Header, body io.Reader) (r *http.Response, err os.Error) {
+func post(surl string, headers http.Header, body io.Reader) (r *http.Response, err error) {
 	var req http.Request
 	req.Method = "POST"
 	req.ProtoMajor = 1
@@ -71,14 +70,14 @@ type nopCloser struct {
 	io.Reader
 }
 
-func (nopCloser) Close() os.Error { return nil }
+func (nopCloser) Close() error { return nil }
 
 type readClose struct {
 	io.Reader
 	io.Closer
 }
 
-func send(req *http.Request) (resp *http.Response, err os.Error) {
+func send(req *http.Request) (resp *http.Response, err error) {
 	if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
 		return nil, nil
 	}
@@ -123,6 +122,5 @@ func send(req *http.Request) (resp *http.Response, err os.Error) {
 
 	return
 }
-
 
 func hasPort(s string) bool { return strings.LastIndex(s, ":") > strings.LastIndex(s, "]") }

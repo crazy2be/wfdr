@@ -7,16 +7,15 @@ Please note that one instance is run for each folder that needs monitoring (e.g.
 // TODO: Hook into the inotify osx equivalent.
 package main
 
-
 import (
-	"os"
+	"flag"
 	"fmt"
 	"log"
-	"flag"
-	"strings"
+	"os"
+	"exp/inotify"
 	"os/signal"
-	"os/inotify"
 	"path/filepath"
+	"strings"
 	// Local imports
 	"github.com/crazy2be/osutil"
 )
@@ -35,7 +34,6 @@ func main() {
 	flag.StringVar(&mode, "mode", "sync", "What mode should the monitor run in? Valid options include:\n\tsync: Runs once, performing a one-way sync of all files.\n\tdeamon: Runs in the background, updating files as they are changed. Currently only supported on Linux.")
 	flag.BoolVar(&debug, "debug", false, "Run in debug mode? Outputs a lot more garbage.")
 	flag.Parse()
-	
 
 	if debug {
 		dlog = log.New(os.Stderr, "DEBUG: ", log.Ltime|log.Lshortfile)
@@ -58,9 +56,9 @@ func main() {
 	v.dest.root = destDir
 	v.dest.subfolder = destSubfolder
 	v.fileType = fileType
-	
-	var err os.Error
-	
+
+	var err error
+
 	if mode == "deamon" {
 		v.deamon = true
 		v.watcher, err = inotify.NewWatcher()
@@ -69,23 +67,23 @@ func main() {
 		}
 	}
 
-	errchan := make(chan os.Error, 100)
+	errchan := make(chan error, 100)
 	donechan := make(chan bool, 1)
-	
+
 	go func() {
 		for {
 			select {
-				case err := <-errchan:
-					fmt.Println("Error in walker:", err)
-				case <-donechan:
-					return
+			case err := <-errchan:
+				fmt.Println("Error in walker:", err)
+			case <-donechan:
+				return
 			}
 		}
 	}()
-	
+
 	filepath.Walk(sourceDir, &v, errchan)
-	donechan <-true
-	
+	donechan <- true
+
 	if v.deamon {
 		v.InotifyLoop()
 	}
@@ -96,9 +94,9 @@ func (v *Visitor) String() string {
 }
 
 type Visitor struct {
-	source, dest *Path // Path of the current file
-	fileType     string // Filetype of the current file.
-	deamon       bool // Is the visitor operating in deamon mode? If true, will register hooks rather than check last-modified dates.
+	source, dest *Path            // Path of the current file
+	fileType     string           // Filetype of the current file.
+	deamon       bool             // Is the visitor operating in deamon mode? If true, will register hooks rather than check last-modified dates.
 	watcher      *inotify.Watcher // Watcher, nil if deamon is false.
 }
 
@@ -107,23 +105,23 @@ func (v *Visitor) InotifyLoop() {
 	//log.Println("What")
 	for {
 		select {
-			case ev := <-v.watcher.Event:
-				//os.Exit(0)
-				v.WatcherEvent(ev)
-			case sig := <-signal.Incoming:
-				switch (sig.(os.UnixSignal)) {
-				// SIGINT, SIGKILL, SIGTERM
-				case 0x02, 0x09, 0xf:
-					v.watcher.Close()
-					os.Exit(0)
-				// SIGCHLD
-				case 0x11:
-					// Do nothing
-				default:
-					log.Println("Unhandled signal:", sig)
-				}
-			case err := <-v.watcher.Error:
-				log.Println("Error in watcher:", err)
+		case ev := <-v.watcher.Event:
+			//os.Exit(0)
+			v.WatcherEvent(ev)
+		case sig := <-signal.Incoming:
+			switch sig.(os.UnixSignal) {
+			// SIGINT, SIGKILL, SIGTERM
+			case 0x02, 0x09, 0xf:
+				v.watcher.Close()
+				os.Exit(0)
+			// SIGCHLD
+			case 0x11:
+				// Do nothing
+			default:
+				log.Println("Unhandled signal:", sig)
+			}
+		case err := <-v.watcher.Error:
+			log.Println("Error in watcher:", err)
 		}
 	}
 }
@@ -145,7 +143,7 @@ func (v *Visitor) WatcherEvent(ev *inotify.Event) {
 	//log.Println(ev)
 }
 
-func (v *Visitor) VisitDir(dirpath string, fi *os.FileInfo) bool {
+func (v *Visitor) VisitDir(dirpath string, fi os.FileInfo) bool {
 	// Only do something if in deamon mode.
 	if !v.deamon {
 		return true
@@ -159,7 +157,7 @@ func (v *Visitor) VisitDir(dirpath string, fi *os.FileInfo) bool {
 	return true
 }
 
-func (v *Visitor) VisitFile(fpath string, fi *os.FileInfo) {
+func (v *Visitor) VisitFile(fpath string, fi os.FileInfo) {
 	// Don't do anything for files when in deamon mode.
 	if v.deamon {
 		return
@@ -175,7 +173,7 @@ func (v *Visitor) VisitFile(fpath string, fi *os.FileInfo) {
 	return
 }
 
-func (v *Visitor) CheckFile(layout string, fi *os.FileInfo) {
+func (v *Visitor) CheckFile(layout string, fi os.FileInfo) {
 	// Gross
 	fpath := v.source.JoinWithRootLayoutAndSubfolder(v.dest.root, layout, v.dest.subfolder)
 	cachefi, err := os.Stat(fpath)
@@ -185,7 +183,7 @@ func (v *Visitor) CheckFile(layout string, fi *os.FileInfo) {
 		v.ReloadFile(layout)
 		return
 	}
-	if cachefi.Mtime_ns < fi.Mtime_ns {
+	if cachefi.ModTime() < fi.ModTime() {
 		fmt.Println("Reloading file:", fpath)
 		v.ReloadFile(layout)
 	} else {
@@ -212,15 +210,15 @@ func (v *Visitor) ReloadFile(layout string) {
 	default:
 		fmt.Println("WARNING: UNRECOGNIZED FILE TYPE", v.fileType)
 	}
-	
+
 	source1 := v.source.JoinWithLayout("base")
 	source2 := v.source.JoinWithLayout(layout)
 	dest := v.source.JoinWithRootLayoutAndSubfolder(v.dest.root, layout, v.dest.subfolder)
-	
+
 	dlog.Println("Calculated destination as:", dest)
-	
+
 	proc, err := osutil.RunWithEnv(
-		"framework/merge-handlers/" + cmd,
+		"framework/merge-handlers/"+cmd,
 		nil,
 		[]string{
 			"WFDR_SOURCE_1=" + source1,

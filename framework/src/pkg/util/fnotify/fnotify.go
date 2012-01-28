@@ -3,24 +3,23 @@ package fnotify
 // Provides a more convenient binding to the inotify API that utilizes callback functions rather than a polling loop, and is thus more condusive to a web-based enviroment, where most things are operating as callbacks anyway.
 
 import (
-	"os"
-	"log"
 	"fmt"
+	"log"
+	"exp/inotify"
 	"sort"
 	"strings"
-	"os/inotify"
 	// Local imports
 	//"util/paths"
 )
 
 type modifiedHandler struct {
-	path string
+	path     string
 	callback func(string)
 }
 
 type modifiedHandlerArray []modifiedHandler
 
-func (this modifiedHandlerArray) Len() int { 
+func (this modifiedHandlerArray) Len() int {
 	return len(this)
 }
 func (this modifiedHandlerArray) Less(i, j int) bool {
@@ -31,11 +30,11 @@ func (this modifiedHandlerArray) Swap(i, j int) {
 }
 
 type Watcher struct {
-	watcher *inotify.Watcher
+	watcher          *inotify.Watcher
 	modifiedHandlers modifiedHandlerArray
 }
 
-func NewWatcher() (*Watcher, os.Error) {
+func NewWatcher() (*Watcher, error) {
 	iwatcher, err := inotify.NewWatcher()
 	// TODO: Polling fallback
 	if err != nil {
@@ -53,24 +52,24 @@ func NewWatcher() (*Watcher, os.Error) {
 func (w *Watcher) Watch() {
 	for {
 		select {
-			case ev := <-w.watcher.Event:
-				for _, handler := range w.modifiedHandlers {
-					if strings.HasPrefix(ev.Name, handler.path) {
-						fmt.Println(handler)
-						handler.callback(ev.Name)
-					}
+		case ev := <-w.watcher.Event:
+			for _, handler := range w.modifiedHandlers {
+				if strings.HasPrefix(ev.Name, handler.path) {
+					fmt.Println(handler)
+					handler.callback(ev.Name)
 				}
-				log.Println("event:", ev)
-				log.Println("handlers:", w.modifiedHandlers)
-				//case addreq :=
-			case err := <-w.watcher.Error:
-				log.Println("error:", err)
+			}
+			log.Println("event:", ev)
+			log.Println("handlers:", w.modifiedHandlers)
+			//case addreq :=
+		case err := <-w.watcher.Error:
+			log.Println("error:", err)
 		}
 	}
 }
 
 // Register a callback for when files are modified.
-func (w *Watcher) Modified(path string, callback func(string)) os.Error {
+func (w *Watcher) Modified(path string, callback func(string)) error {
 	err := w.watcher.AddWatch(path, inotify.IN_MODIFY)
 	if err != nil {
 		log.Println("Error watching file", path, ":", err)
@@ -80,6 +79,7 @@ func (w *Watcher) Modified(path string, callback func(string)) os.Error {
 	sort.Sort(w.modifiedHandlers)
 	return nil
 }
+
 //func Register(path string, flags uint32, callback func (*Event)) {
-	
-	//}
+
+//}

@@ -4,30 +4,31 @@ package template
 // TODO: Add caching in production configuration, or in both if you can hook in with inotify to automatically update the cache when a file is updated. Look at os/inoify.
 
 import (
-	"http"
-	"os"
+	"errors"
 	"fmt"
+
+	"encoding/json"
 	"io"
 	"log"
-	"time"
-	"json"
+	"net/http"
 	"strings"
+	"time"
 	// Local packages.
-	dlog "util/dlog"
-	"github.com/crazy2be/perms"
 	"github.com/crazy2be/browser"
+	"github.com/crazy2be/perms"
+	dlog "util/dlog"
 	"util/fnotify"
 )
 
 // A simple struct that should be passed to each page when you render it. Templates can rely on all the information here being available on all templates (or, at least, the ones rendered by go). Some of these will be set by the library automatically, but can be overridden in custom code if needed.
 type PageInfo struct {
-  Title string
-  Name string // "photos", "main", "events", etc.
-  Request *http.Request // The actual request object
-  Perms *perms.Permissions
-  ModuleName map[string]bool // Used for highlighting current item on navbar. Not required to be defined if you follow the recommended naming for the "Name" field, this library tries to guess the ModuleName based off of that if it is not defined.
-  Mobile bool // Is it a mobile browser?
-  Object interface{} // Custom-defined data to pass to the template.
+	Title      string
+	Name       string        // "photos", "main", "events", etc.
+	Request    *http.Request // The actual request object
+	Perms      *perms.Permissions
+	ModuleName map[string]bool // Used for highlighting current item on navbar. Not required to be defined if you follow the recommended naming for the "Name" field, this library tries to guess the ModuleName based off of that if it is not defined.
+	Mobile     bool            // Is it a mobile browser?
+	Object     interface{}     // Custom-defined data to pass to the template.
 }
 
 var moduleName = "unknown"
@@ -36,7 +37,7 @@ var templates = make(map[string]*Template)
 // Sets the name of the module that is using this library, used to select the directory to search for templates.
 // Pretty much useless with the new jailing API, so don't use it anymore.
 func SetModuleName(modName string) {
-	moduleName = strings.ToUpper(modName[:1])+modName[1:]
+	moduleName = strings.ToUpper(modName[:1]) + modName[1:]
 	dlog.Println("Set module name to", modName)
 }
 
@@ -55,19 +56,19 @@ func Render(c io.Writer, r *http.Request, title, name string, data interface{}) 
 	if title == "" {
 		title = strings.ToTitle(moduleName)
 	}
-// 	if moduleName == "unknown" {
-// 		log.Println("Warning: Attempting to render a template without moduleName being set! Call SetModuleName during the initialization of your module in order to correct this (in main()).")
-// 	}
+	// 	if moduleName == "unknown" {
+	// 		log.Println("Warning: Attempting to render a template without moduleName being set! Call SetModuleName during the initialization of your module in order to correct this (in main()).")
+	// 	}
 	p.Title = title
 	// Removed the modulename because it's not needed in the new framework. However, this will break things in the old framework. *sigh*...
-	p.Name = /*moduleName + "/" + */name
+	p.Name = /*moduleName + "/" + */ name
 	p.Request = r
 	perms, _ := perms.Get(r)
 	p.Perms = perms
 	p.Object = data
-	
+
 	dlog.Println(p)
-	
+
 	// TODO: Remove Execute() function and do this here.
 	Execute(c, &p)
 }
@@ -101,45 +102,45 @@ func WouldUseJson(r *http.Request) bool {
 
 // Takes an io.Writer and a stuct of PageInfo, rendering the template specified by the PageInfo struct onto the io.Writer. Automatically selects mobile vs desktop templates, and returns an error if anything goes wrong. If you want more control, too bad until someone adds it in.
 // NOTE: This function is depricated! Use Render() instead!
-func Execute(wr io.Writer, data *PageInfo) (e os.Error) {
+func Execute(wr io.Writer, data *PageInfo) (e error) {
 	if len(data.Name) < 1 {
-		e = os.NewError("PageInfo template name not specified!")
+		e = errors.New("PageInfo template name not specified!")
 		return
 	}
-	
+
 	data.ModuleName = make(map[string]bool, 1)
 	data.ModuleName[moduleName] = true
-	
+
 	dlog.Println("ModuleName:", moduleName, "Map:", data.ModuleName)
-	
+
 	prefix := "tmpl/desktop/"
 	if WouldUseMobile(data.Request) {
 		prefix = "tmpl/mobile/"
 	}
-	
+
 	// TODO: Should add caching here in production configuration.
-	startTime := time.Nanoseconds()
-	
+	startTime := time.Now()
+
 	//templates[prefix+data.Name], e = ParseFile(prefix+data.Name)
-	template, err := GetTemplate(prefix+data.Name)
-	
-	endTime := time.Nanoseconds()
-	deltaTime := endTime - startTime
+	template, err := GetTemplate(prefix + data.Name)
+
+	endTime := time.Now()
+	deltaTime := endTime.Sub(startTime)
 	fmt.Println("Took", float32(deltaTime)/(1000.0*1000.0*1000.0), "seconds to parse template", data.Name)
-	
+
 	//template := templates[prefix+data.Name]
-	
+
 	if err != nil {
 		fmt.Println("Error parsing template '", data.Name, "':", err)
 		return
 	}
-	
-	startTime = time.Nanoseconds()
-	
+
+	startTime = time.Now()
+
 	template.Render(wr, data)
-	
-	endTime = time.Nanoseconds()
-	deltaTime = endTime - startTime
+
+	endTime = time.Now()
+	deltaTime = endTime.Sub(startTime)
 	fmt.Println("Took", float32(deltaTime)/(1000.0*1000.0*1000.0), "seconds to render template", data.Name)
 	return
 }
@@ -147,7 +148,7 @@ func Execute(wr io.Writer, data *PageInfo) (e os.Error) {
 var watcher *fnotify.Watcher
 
 func init() {
-	var err os.Error
+	var err error
 	watcher, err = fnotify.NewWatcher()
 	if err != nil {
 		log.Fatal("Error initializing inotify!", err)
@@ -155,7 +156,7 @@ func init() {
 	go watcher.Watch()
 }
 
-func LoadTemplate(path string) os.Error {
+func LoadTemplate(path string) error {
 	fmt.Println("Loading template:", path)
 	template, err := ParseFile(path)
 	if err != nil {
@@ -171,7 +172,7 @@ func TemplateModified(path string) {
 	LoadTemplate(path)
 }
 
-func GetTemplate(path string) (*Template, os.Error) {
+func GetTemplate(path string) (*Template, error) {
 	template, ok := templates[path]
 	if ok {
 		return template, nil
@@ -182,6 +183,6 @@ func GetTemplate(path string) (*Template, os.Error) {
 	}
 	fmt.Println(path)
 	watcher.Modified(path, TemplateModified)
-	
+
 	return templates[path], nil
 }

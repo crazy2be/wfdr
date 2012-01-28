@@ -1,14 +1,15 @@
 package main
 
 import (
-	"os"
+	"errors"
 	"fmt"
 	"log"
+	"os"
 	"path"
 	"syscall"
 	// Local imports
-	"util/dlog"
 	"github.com/crazy2be/osutil"
+	"util/dlog"
 )
 
 type Module struct {
@@ -21,10 +22,10 @@ type Module struct {
 
 var modules = make(map[string]*Module)
 
-func GetModule(name string) (*Module, os.Error) {
+func GetModule(name string) (*Module, error) {
 	module, exists := modules[name]
 	if !exists {
-		return nil, os.NewError("Module is not started!")
+		return nil, errors.New("Module is not started!")
 	}
 	return module, nil
 }
@@ -37,12 +38,12 @@ func ModuleRunning(name string) bool {
 	return module.IsRunning()
 }
 
-func (m *Module) Stop() os.Error {
+func (m *Module) Stop() error {
 	// 0x02, or SIGINT.
 	syscall.Kill(m.MainProcess.Pid, 0x02)
 	syscall.Kill(m.SyncProcess.Pid, 0x02)
 	// TODO: Check for syscall errors
-	modules[m.Name] = nil, false
+	delete(modules, m.Name)
 	return nil
 }
 
@@ -59,38 +60,38 @@ func (m *Module) IsRunning() bool {
 		return true
 	}
 	if waitmsg.WaitStatus.Exited() {
-		modules[m.Name] = nil, false
+		delete(modules, m.Name)
 		return false
 	}
 	return true
 }
 
-func JailInit(moddir, jaildir, modname string) (os.Error) {
+func JailInit(moddir, jaildir, modname string) error {
 	osutil.WaitRun("wfdr-reload-shared", nil)
 	setup, err := osutil.RunWithEnv("jail-init", nil, []string{"WFDR_MODDIR=" + moddir, "WFDR_JAILDIR=" + jaildir, "WFDR_MODNAME=" + modname})
 	if err != nil {
-		return os.NewError(fmt.Sprint("Could not run script to initialize jail:", err, " PATH:", os.Getenv("PATH")))
+		return errors.New(fmt.Sprint("Could not run script to initialize jail:", err, " PATH:", os.Getenv("PATH")))
 	}
 	setup.Wait()
 	return nil
 }
 
-func StartSync(moddir, jaildir, modname string) (*os.Process, os.Error) {
+func StartSync(moddir, jaildir, modname string) (*os.Process, error) {
 	//hho := exec.PassThrough
-	deamon, err := osutil.RunWithEnv("jail-deamon", nil,  []string{"WFDR_MODDIR=" + moddir, "WFDR_JAILDIR=" + jaildir, "WFDR_MODNAME=" + modname})
+	deamon, err := osutil.RunWithEnv("jail-deamon", nil, []string{"WFDR_MODDIR=" + moddir, "WFDR_JAILDIR=" + jaildir, "WFDR_MODNAME=" + modname})
 	if err != nil {
-		return nil, os.NewError(fmt.Sprint("Could not start sync deamon, css, js, and template files will not be synced:", err))
+		return nil, errors.New(fmt.Sprint("Could not start sync deamon, css, js, and template files will not be synced:", err))
 	}
 	return deamon.Process, nil
 }
 
 // Syncronizes the shared resources and starts the deamon to sync them.
-func StartSharedSync() (*Module, os.Error) {
+func StartSharedSync() (*Module, error) {
 	name := "internal:shared"
 	if ModuleRunning(name) {
 		return GetModule(name)
 	}
-	var err os.Error
+	var err error
 	_, err = osutil.WaitRun("shared-init", nil)
 	if err != nil {
 		return nil, err
@@ -107,17 +108,17 @@ func StartSharedSync() (*Module, os.Error) {
 	return mod, nil
 }
 
-func StartModule(name string) (*Module, os.Error) {
+func StartModule(name string) (*Module, error) {
 	if ModuleRunning(name) {
-		return nil, os.NewError(fmt.Sprint("The module seems to be already started..."))
+		return nil, errors.New(fmt.Sprint("The module seems to be already started..."))
 	}
-	
+
 	// Handle special/internal modules
-	switch (name) {
-		case "internal:shared":
-			return StartSharedSync()
+	switch name {
+	case "internal:shared":
+		return StartSharedSync()
 	}
-	
+
 	cwd, _ := os.Getwd()
 	jaildir := path.Join(cwd, "jails/"+name)
 	moddir := path.Join(cwd, "modules/"+name)
@@ -126,19 +127,19 @@ func StartModule(name string) (*Module, os.Error) {
 	path := jaildir + "/sh:" + jaildir + "/bin:" + os.Getenv("PATH")
 
 	if !osutil.FileExists(jaildir + "/sh/run") {
-		cp, err := osutil.WaitRun("cp", []string{"framework/sh/jail-run", jaildir+"/sh/run"})
+		cp, err := osutil.WaitRun("cp", []string{"framework/sh/jail-run", jaildir + "/sh/run"})
 		if err != nil {
-			return nil, os.NewError(fmt.Sprint("Error copying default run file, cannot continue:", err))
+			return nil, errors.New(fmt.Sprint("Error copying default run file, cannot continue:", err))
 		}
 		cp.Wait()
 	}
 
 	modulep, err := osutil.RunWithEnvAndWd("run", []string{name}, []string{"PATH=" + path}, jaildir)
 	if err != nil {
-		return nil, os.NewError(fmt.Sprint("Could not start module " + name + "!:", err))
+		return nil, errors.New(fmt.Sprint("Could not start module "+name+"!:", err))
 	}
 	pid := modulep.Process.Pid
-	
+
 	module := new(Module)
 	module.Name = name
 	module.MainProcess = modulep.Process
@@ -146,7 +147,7 @@ func StartModule(name string) (*Module, os.Error) {
 	defer func() {
 		modules[name] = module
 	}()
-	
+
 	log.Println("Started Module "+name+"! PID:", pid)
 
 	// Start the sync deamon, syncronizes css, js, and templates in the background
@@ -154,17 +155,17 @@ func StartModule(name string) (*Module, os.Error) {
 	if err != nil {
 		return module, err
 	}
-	
+
 	module.SyncProcess = syncproc
-	
+
 	return module, nil
 }
 
-func StopModule(name string) os.Error {
+func StopModule(name string) error {
 	if !ModuleRunning(name) {
-		return os.NewError("The module cannot possibly be stopped, as it does not appear to be running.")
+		return errors.New("The module cannot possibly be stopped, as it does not appear to be running.")
 	}
-	
+
 	module, err := GetModule(name)
 	if err != nil {
 		return err

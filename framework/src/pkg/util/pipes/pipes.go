@@ -2,15 +2,16 @@
 package pipes
 
 import (
-	"os"
+	"errors"
 	"fmt"
+	"os"
 	"time"
 	// Local imports
 	"github.com/crazy2be/osutil"
 )
 
 type PipeReadWriteCloser struct {
-	infile *os.File
+	infile  *os.File
 	outfile *os.File
 }
 
@@ -19,7 +20,7 @@ func NewPipeReadWriteCloser(infile, outfile *os.File) *PipeReadWriteCloser {
 }
 
 // Creates the pipe if it does not exist, and then opens it using OpenPipe().
-func MakeAndOpen(pipename string) (*os.File, os.Error) {
+func MakeAndOpen(pipename string) (*os.File, error) {
 	if !osutil.FileExists(pipename) {
 		Mkfifo(pipename, 0644)
 	}
@@ -27,39 +28,39 @@ func MakeAndOpen(pipename string) (*os.File, os.Error) {
 }
 
 // Checks a named pipe for sanity, ensuring that the caller can read the pipe, and that it is, in fact, a pipe. Returns the file if it could be successfully opened.
-func Open(pipename string) (*os.File, os.Error) {
+func Open(pipename string) (*os.File, error) {
 	finfo, err := os.Stat(pipename)
 	if err != nil {
-		return nil, os.NewError(fmt.Sprint("Error stating pipe ", pipename, ": ", err))
+		return nil, errors.New(fmt.Sprint("Error stating pipe ", pipename, ": ", err))
 	}
-	
-	if !finfo.IsFifo() {
-		return nil, os.NewError(fmt.Sprint("Specified pipe file ", pipename, " is not a named pipe type file! Remove it to have a pipe file created in it's place."))
+
+	if finfo.Mode() & os.ModeNamedPipe != os.ModeNamedPipe {
+		return nil, errors.New(fmt.Sprint("Specified pipe file ", pipename, " is not a named pipe type file! Remove it to have a pipe file created in it's place."))
 	}
-	
+
 	file, err := os.OpenFile(pipename, os.O_RDWR|os.O_NONBLOCK, 0644)
 	if err != nil {
-		return nil, os.NewError(fmt.Sprint("Error opening pipe ", pipename, ": ", err))
+		return nil, errors.New(fmt.Sprint("Error opening pipe ", pipename, ": ", err))
 	}
 	return file, nil
 }
 
 // Implements a semi-blocking interface to the non-blocking underlying pipe (assuming the pipe was opened with CheckPipe())
 // BUG: Slower than a normal read, because it Sleep()s in a loop polling for data. 
-func (prwc *PipeReadWriteCloser) Read(buf []byte) (int, os.Error) {
+func (prwc *PipeReadWriteCloser) Read(buf []byte) (int, error) {
 	n, err := prwc.infile.Read(buf)
 	for n == 0 {
 		n, err = prwc.infile.Read(buf)
-		time.Sleep(1000*1000*10) //  1/100th of a second, prevents it from using 100% of the CPU.
+		time.Sleep(1000 * 1000 * 10) //  1/100th of a second, prevents it from using 100% of the CPU.
 	}
 	return n, err
 }
 
-func (prwc *PipeReadWriteCloser) Write(buf []byte) (int, os.Error) {
+func (prwc *PipeReadWriteCloser) Write(buf []byte) (int, error) {
 	return prwc.outfile.Write(buf)
 }
 
-func (prwc *PipeReadWriteCloser) Close() os.Error {
+func (prwc *PipeReadWriteCloser) Close() error {
 	err := prwc.infile.Close()
 	if err != nil {
 		return err

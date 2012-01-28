@@ -1,8 +1,8 @@
 package template
 
 import (
-	//    "bytes"
-	"container/vector"
+	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,7 +25,7 @@ type sectionElement struct {
 	name      string
 	inverted  bool
 	startline int
-	elems     *vector.Vector
+	elems     []interface{}
 }
 
 type Template struct {
@@ -35,7 +35,7 @@ type Template struct {
 	p       int
 	curline int
 	dir     string
-	elems   *vector.Vector
+	elems   []interface{}
 }
 
 type parseError struct {
@@ -43,7 +43,7 @@ type parseError struct {
 	message string
 }
 
-func (p parseError) String() string { return fmt.Sprintf("line %d: %s", p.line, p.message) }
+func (p parseError) Error() string { return fmt.Sprintf("line %d: %s", p.line, p.message) }
 
 var (
 	esc_quot = []byte("&quot;")
@@ -59,18 +59,18 @@ func htmlEscape(w io.Writer, s []byte) {
 	last := 0
 	for i, c := range s {
 		switch c {
-		case '"':
-			esc = esc_quot
-		case '\'':
-			esc = esc_apos
-		case '&':
-			esc = esc_amp
-		case '<':
-			esc = esc_lt
-		case '>':
-			esc = esc_gt
-		default:
-			continue
+			case '"':
+				esc = esc_quot
+			case '\'':
+				esc = esc_apos
+			case '&':
+				esc = esc_amp
+			case '<':
+				esc = esc_lt
+			case '>':
+				esc = esc_gt
+			default:
+				continue
 		}
 		w.Write(s[last:i])
 		w.Write(esc)
@@ -79,24 +79,24 @@ func htmlEscape(w io.Writer, s []byte) {
 	w.Write(s[last:])
 }
 
-func (tmpl *Template) readString(s string) (string, os.Error) {
+func (tmpl *Template) readString(s string) (string, error) {
 	i := tmpl.p
 	newlines := 0
 	for true {
 		//are we at the end of the string?
 		if i+len(s) > len(tmpl.data) {
-			return tmpl.data[tmpl.p:], os.EOF
+			return tmpl.data[tmpl.p:], io.EOF
 		}
-
+		
 		if tmpl.data[i] == '\n' {
 			newlines++
 		}
-
+		
 		if tmpl.data[i] != s[0] {
 			i++
 			continue
 		}
-
+		
 		match := true
 		for j := 1; j < len(s); j++ {
 			if s[j] != tmpl.data[i+j] {
@@ -104,217 +104,217 @@ func (tmpl *Template) readString(s string) (string, os.Error) {
 				break
 			}
 		}
-
+		
 		if match {
 			e := i + len(s)
 			text := tmpl.data[tmpl.p:e]
 			tmpl.p = e
-
+			
 			tmpl.curline += newlines
 			return text, nil
 		} else {
 			i++
 		}
 	}
-
+	
 	//should never be here
 	return "", nil
 }
 
-func (tmpl *Template) parsePartial(name string) (*Template, os.Error) {
+func (tmpl *Template) parsePartial(name string) (*Template, error) {
 	filenames := []string{
 		path.Join(tmpl.dir, name),
+		path.Join(tmpl.dir, name+".mustache"),
+		path.Join(tmpl.dir, name+".stache"),
 		name,
-		"tmpl/" + name,
+		name + ".mustache",
+		name + ".stache",
 	}
 	var filename string
 	for _, name := range filenames {
 		f, err := os.Open(name)
 		f.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
 		if err == nil {
 			filename = name
 			break
 		}
 	}
 	if filename == "" {
-		return nil, os.NewError(fmt.Sprintf("Could not find partial %q", name))
+		return nil, errors.New(fmt.Sprintf("Could not find partial %q", name))
 	}
-
+	
 	partial, err := ParseFile(filename)
-
+	
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return partial, nil
 }
 
-func (tmpl *Template) parseSection(section *sectionElement) os.Error {
+func (tmpl *Template) parseSection(section *sectionElement) error {
 	for {
 		text, err := tmpl.readString(tmpl.otag)
-
-		if err == os.EOF {
+		
+		if err == io.EOF {
 			return parseError{section.startline, "Section " + section.name + " has no closing tag"}
 		}
-
+		
 		// put text into an item
 		text = text[0 : len(text)-len(tmpl.otag)]
-		section.elems.Push(&textElement{[]byte(text)})
+		section.elems = append(section.elems, &textElement{[]byte(text)})
 		if tmpl.p < len(tmpl.data) && tmpl.data[tmpl.p] == '{' {
 			text, err = tmpl.readString("}" + tmpl.ctag)
 		} else {
 			text, err = tmpl.readString(tmpl.ctag)
 		}
-
-		if err == os.EOF {
+		
+		if err == io.EOF {
 			//put the remaining text in a block
 			return parseError{tmpl.curline, "unmatched open tag"}
 		}
-
+		
 		//trim the close tag off the text
 		tag := strings.TrimSpace(text[0 : len(text)-len(tmpl.ctag)])
-
+		
 		if len(tag) == 0 {
 			return parseError{tmpl.curline, "empty tag"}
 		}
 		switch tag[0] {
-		case '!':
-			//ignore comment
-			break
-		case '#', '^':
-			name := strings.TrimSpace(tag[1:])
-
-			//ignore the newline when a section starts
-			if len(tmpl.data) > tmpl.p && tmpl.data[tmpl.p] == '\n' {
-				tmpl.p += 1
-			} else if len(tmpl.data) > tmpl.p+1 && tmpl.data[tmpl.p] == '\r' && tmpl.data[tmpl.p+1] == '\n' {
-				tmpl.p += 2
-			}
-
-			se := sectionElement{name, tag[0] == '^', tmpl.curline, new(vector.Vector)}
-			err := tmpl.parseSection(&se)
-			if err != nil {
-				return err
-			}
-			section.elems.Push(&se)
-		case '/':
-			name := strings.TrimSpace(tag[1:])
-			if name != section.name {
-				return parseError{tmpl.curline, "interleaved closing tag: " + name}
-			} else {
-				return nil
-			}
-		case '>':
-			name := strings.TrimSpace(tag[1:])
-			partial, err := tmpl.parsePartial(name)
-			if err != nil {
-				return err
-			}
-			section.elems.Push(partial)
-		case '=':
-			if tag[len(tag)-1] != '=' {
-				return parseError{tmpl.curline, "Invalid meta tag"}
-			}
-			tag = strings.TrimSpace(tag[1 : len(tag)-1])
-			newtags := strings.SplitN(tag, " ", 2)
-			if len(newtags) == 2 {
-				tmpl.otag = newtags[0]
-				tmpl.ctag = newtags[1]
-			}
-		case '{':
-			if tag[len(tag)-1] == '}' {
-				//use a raw tag
-				section.elems.Push(&varElement{tag[1 : len(tag)-1], true})
-			}
-		default:
-			section.elems.Push(&varElement{tag, false})
+			case '!':
+				//ignore comment
+				break
+			case '#', '^':
+				name := strings.TrimSpace(tag[1:])
+				
+				//ignore the newline when a section starts
+				if len(tmpl.data) > tmpl.p && tmpl.data[tmpl.p] == '\n' {
+					tmpl.p += 1
+				} else if len(tmpl.data) > tmpl.p+1 && tmpl.data[tmpl.p] == '\r' && tmpl.data[tmpl.p+1] == '\n' {
+					tmpl.p += 2
+				}
+				
+				se := sectionElement{name, tag[0] == '^', tmpl.curline, make([]interface{}, 0)}
+				err := tmpl.parseSection(&se)
+				if err != nil {
+					return err
+				}
+				section.elems = append(section.elems, &se)
+			case '/':
+				name := strings.TrimSpace(tag[1:])
+				if name != section.name {
+					return parseError{tmpl.curline, "interleaved closing tag: " + name}
+				} else {
+					return nil
+				}
+			case '>':
+				name := strings.TrimSpace(tag[1:])
+				partial, err := tmpl.parsePartial(name)
+				if err != nil {
+					return err
+				}
+				section.elems = append(section.elems, partial)
+			case '=':
+				if tag[len(tag)-1] != '=' {
+					return parseError{tmpl.curline, "Invalid meta tag"}
+				}
+				tag = strings.TrimSpace(tag[1 : len(tag)-1])
+				newtags := strings.SplitN(tag, " ", 2)
+				if len(newtags) == 2 {
+					tmpl.otag = newtags[0]
+					tmpl.ctag = newtags[1]
+				}
+			case '{':
+				if tag[len(tag)-1] == '}' {
+					//use a raw tag
+					section.elems = append(section.elems, &varElement{tag[1 : len(tag)-1], true})
+				}
+			default:
+				section.elems = append(section.elems, &varElement{tag, false})
 		}
 	}
-
+	
 	return nil
 }
 
-func (tmpl *Template) parse() os.Error {
+func (tmpl *Template) parse() error {
 	for {
 		text, err := tmpl.readString(tmpl.otag)
-
-		if err == os.EOF {
+		
+		if err == io.EOF {
 			//put the remaining text in a block
-			tmpl.elems.Push(&textElement{[]byte(text)})
+			tmpl.elems = append(tmpl.elems, &textElement{[]byte(text)})
 			return nil
 		}
-
+		
 		// put text into an item
 		text = text[0 : len(text)-len(tmpl.otag)]
-		tmpl.elems.Push(&textElement{[]byte(text)})
-
+		tmpl.elems = append(tmpl.elems, &textElement{[]byte(text)})
+		
 		if tmpl.p < len(tmpl.data) && tmpl.data[tmpl.p] == '{' {
 			text, err = tmpl.readString("}" + tmpl.ctag)
 		} else {
 			text, err = tmpl.readString(tmpl.ctag)
 		}
-
-		if err == os.EOF {
+		
+		if err == io.EOF {
 			//put the remaining text in a block
 			return parseError{tmpl.curline, "unmatched open tag"}
 		}
-
+		
 		//trim the close tag off the text
 		tag := strings.TrimSpace(text[0 : len(text)-len(tmpl.ctag)])
 		if len(tag) == 0 {
 			return parseError{tmpl.curline, "empty tag"}
 		}
 		switch tag[0] {
-		case '!':
-			//ignore comment
-			break
-		case '#', '^':
-			name := strings.TrimSpace(tag[1:])
-
-			if len(tmpl.data) > tmpl.p && tmpl.data[tmpl.p] == '\n' {
-				tmpl.p += 1
-			} else if len(tmpl.data) > tmpl.p+1 && tmpl.data[tmpl.p] == '\r' && tmpl.data[tmpl.p+1] == '\n' {
-				tmpl.p += 2
-			}
-
-			se := sectionElement{name, tag[0] == '^', tmpl.curline, new(vector.Vector)}
-			err := tmpl.parseSection(&se)
-			if err != nil {
-				return err
-			}
-			tmpl.elems.Push(&se)
-		case '/':
-			return parseError{tmpl.curline, "unmatched close tag"}
-		case '>':
-			name := strings.TrimSpace(tag[1:])
-			partial, err := tmpl.parsePartial(name)
-			if err != nil {
-				return err
-			}
-			tmpl.elems.Push(partial)
-		case '=':
-			if tag[len(tag)-1] != '=' {
-				return parseError{tmpl.curline, "Invalid meta tag"}
-			}
-			tag = strings.TrimSpace(tag[1 : len(tag)-1])
-			newtags := strings.SplitN(tag, " ", 2)
-			if len(newtags) == 2 {
-				tmpl.otag = newtags[0]
-				tmpl.ctag = newtags[1]
-			}
-		case '{':
-			//use a raw tag
-			if tag[len(tag)-1] == '}' {
-				tmpl.elems.Push(&varElement{tag[1 : len(tag)-1], true})
-			}
-		default:
-			tmpl.elems.Push(&varElement{tag, false})
+			case '!':
+				//ignore comment
+				break
+			case '#', '^':
+				name := strings.TrimSpace(tag[1:])
+				
+				if len(tmpl.data) > tmpl.p && tmpl.data[tmpl.p] == '\n' {
+					tmpl.p += 1
+				} else if len(tmpl.data) > tmpl.p+1 && tmpl.data[tmpl.p] == '\r' && tmpl.data[tmpl.p+1] == '\n' {
+					tmpl.p += 2
+				}
+				
+				se := sectionElement{name, tag[0] == '^', tmpl.curline, make([]interface{}, 0)}
+				err := tmpl.parseSection(&se)
+				if err != nil {
+					return err
+				}
+				tmpl.elems = append(tmpl.elems, &se)
+			case '/':
+				return parseError{tmpl.curline, "unmatched close tag"}
+			case '>':
+				name := strings.TrimSpace(tag[1:])
+				partial, err := tmpl.parsePartial(name)
+				if err != nil {
+					return err
+				}
+				tmpl.elems = append(tmpl.elems, partial)
+			case '=':
+				if tag[len(tag)-1] != '=' {
+					return parseError{tmpl.curline, "Invalid meta tag"}
+				}
+				tag = strings.TrimSpace(tag[1 : len(tag)-1])
+				newtags := strings.SplitN(tag, " ", 2)
+				if len(newtags) == 2 {
+					tmpl.otag = newtags[0]
+					tmpl.ctag = newtags[1]
+				}
+			case '{':
+				//use a raw tag
+				if tag[len(tag)-1] == '}' {
+					tmpl.elems = append(tmpl.elems, &varElement{tag[1 : len(tag)-1], true})
+				}
+			default:
+				tmpl.elems = append(tmpl.elems, &varElement{tag, false})
 		}
 	}
-
+	
 	return nil
 }
 
@@ -334,7 +334,7 @@ func callMethod(data reflect.Value, name string) (result reflect.Value, found bo
 			for i := 0; i < nMethod; i++ {
 				method := typ.Method(i)
 				if method.Name == name {
-
+					
 					found = true // we found the name regardless
 					// does receiver type match? (pointerness might be off)
 					if typ == method.Type.In(0) {
@@ -369,10 +369,16 @@ func call(v reflect.Value, method reflect.Method) reflect.Value {
 
 // Evaluate interfaces and pointers looking for a value that can look up the name, via a
 // struct field, method, or map key, and return the result of the lookup.
-func lookup(contextChain *vector.Vector, name string) reflect.Value {
-Outer:
-	for i := contextChain.Len() - 1; i >= 0; i-- {
-		v := contextChain.At(i).(reflect.Value)
+func lookup(contextChain []reflect.Value, name string) reflect.Value {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Panic while looking up %q: %s\n", name, r)
+		}
+	}()
+	
+	Outer:
+	for i := len(contextChain) - 1; i >= 0; i-- {
+		v := contextChain[i]
 		for v.IsValid() {
 			typ := v.Type()
 			if n := v.Type().NumMethod(); n > 0 {
@@ -385,26 +391,26 @@ Outer:
 				}
 			}
 			switch av := v; av.Kind() {
-			case reflect.Ptr:
-				v = av.Elem()
-			case reflect.Interface:
-				v = av.Elem()
-			case reflect.Struct:
-				ret := av.FieldByName(name)
-				if ret.IsValid() {
-					return ret
-				} else {
+				case reflect.Ptr:
+					v = av.Elem()
+				case reflect.Interface:
+					v = av.Elem()
+				case reflect.Struct:
+					ret := av.FieldByName(name)
+					if ret.IsValid() {
+						return ret
+					} else {
+						continue Outer
+					}
+				case reflect.Map:
+					ret := av.MapIndex(reflect.ValueOf(name))
+					if ret.IsValid() {
+						return ret
+					} else {
+						continue Outer
+					}
+				default:
 					continue Outer
-				}
-			case reflect.Map:
-				ret := av.MapIndex(reflect.ValueOf(name))
-				if ret.IsValid() {
-					return ret
-				} else {
-					continue Outer
-				}
-			default:
-				continue Outer
 			}
 		}
 	}
@@ -415,38 +421,38 @@ func isNil(v reflect.Value) bool {
 	if !v.IsValid() || v.Interface() == nil {
 		return true
 	}
-
+	
 	valueInd := indirect(v)
 	if !valueInd.IsValid() {
 		return true
 	}
 	switch val := valueInd; val.Kind() {
-	case reflect.Bool:
-		return !val.Bool()
+		case reflect.Bool:
+			return !val.Bool()
 	}
-
+	
 	return false
 }
 
 func indirect(v reflect.Value) reflect.Value {
-loop:
+	loop:
 	for v.IsValid() {
 		switch av := v; av.Kind() {
-		case reflect.Ptr:
-			v = av.Elem()
-		case reflect.Interface:
-			v = av.Elem()
-		default:
-			break loop
+			case reflect.Ptr:
+				v = av.Elem()
+			case reflect.Interface:
+				v = av.Elem()
+			default:
+				break loop
 		}
 	}
 	return v
 }
 
-func renderSection(section *sectionElement, contextChain *vector.Vector, buf io.Writer) {
+func renderSection(section *sectionElement, contextChain []reflect.Value, buf io.Writer) {
 	value := lookup(contextChain, section.name)
-	var context = contextChain.At(contextChain.Len() - 1).(reflect.Value)
-	var contexts = new(vector.Vector)
+	var context = contextChain[len(contextChain)-1]
+	var contexts = make([]reflect.Value, 0)
 	// if the value is nil, check if it's an inverted section
 	isNil := isNil(value)
 	if isNil && !section.inverted || !isNil && section.inverted {
@@ -454,117 +460,129 @@ func renderSection(section *sectionElement, contextChain *vector.Vector, buf io.
 	} else {
 		valueInd := indirect(value)
 		switch val := valueInd; val.Kind() {
-		case reflect.Slice:
-			for i := 0; i < val.Len(); i++ {
-				contexts.Push(val.Index(i))
-			}
-		case reflect.Array:
-			for i := 0; i < val.Len(); i++ {
-				contexts.Push(val.Index(i))
-			}
-		case reflect.Map, reflect.Struct:
-			contexts.Push(value)
-		default:
-			contexts.Push(context)
+			case reflect.Slice:
+				for i := 0; i < val.Len(); i++ {
+					contexts = append(contexts, val.Index(i))
+				}
+			case reflect.Array:
+				for i := 0; i < val.Len(); i++ {
+					contexts = append(contexts, val.Index(i))
+				}
+			case reflect.Map, reflect.Struct:
+				contexts = append(contexts, value)
+			default:
+				contexts = append(contexts, context)
 		}
 	}
-
+	
 	//by default we execute the section
-	for j := 0; j < contexts.Len(); j++ {
-		ctx := contexts.At(j).(reflect.Value)
-		contextChain.Push(ctx)
-		for i := 0; i < section.elems.Len(); i++ {
-			renderElement(section.elems.At(i), contextChain, buf)
+	for j := 0; j < len(contexts); j++ {
+		ctx := contexts[j]
+		contextChain = append(contextChain, ctx)
+		for i := 0; i < len(section.elems); i++ {
+			renderElement(section.elems[i], contextChain, buf)
 		}
-		contextChain.Pop()
+		contextChain = contextChain[:len(contextChain)-1]
 	}
 }
 
-func renderElement(element interface{}, contextChain *vector.Vector, buf io.Writer) {
+func renderElement(element interface{}, contextChain []reflect.Value, buf io.Writer) {
 	switch elem := element.(type) {
-	case *textElement:
-		buf.Write(elem.text)
-	case *varElement:
-		val := lookup(contextChain, elem.name)
-		if val.IsValid() {
-			if elem.raw {
-				fmt.Fprint(buf, val.Interface())
-			} else {
-				s := fmt.Sprint(val.Interface())
-				htmlEscape(buf, []byte(s))
+		case *textElement:
+			buf.Write(elem.text)
+		case *varElement:
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Printf("Panic while looking up %q: %s\n", elem.name, r)
+				}
+			}()
+			
+			val := lookup(contextChain, elem.name)
+			if val.IsValid() {
+				if elem.raw {
+					fmt.Fprint(buf, val.Interface())
+				} else {
+					s := fmt.Sprint(val.Interface())
+					htmlEscape(buf, []byte(s))
+				}
 			}
-		}
-	case *sectionElement:
-		renderSection(elem, contextChain, buf)
-	case *Template:
-		elem.renderTemplate(contextChain, buf)
+		case *sectionElement:
+			renderSection(elem, contextChain, buf)
+		case *Template:
+			elem.renderTemplate(contextChain, buf)
 	}
 }
 
-func (tmpl *Template) renderTemplate(contextChain *vector.Vector, buf io.Writer) {
-	for i := 0; i < tmpl.elems.Len(); i++ {
-		renderElement(tmpl.elems.At(i), contextChain, buf)
+func (tmpl *Template) renderTemplate(contextChain []reflect.Value, buf io.Writer) {
+	for i := 0; i < len(tmpl.elems); i++ {
+		renderElement(tmpl.elems[i], contextChain, buf)
 	}
 }
+
+
 
 // Durp. Why this originally created its own buffer and then returned the string is beyond me... it's much more efficient to just ask for a io.Writer to begin with.
-func (tmpl *Template) Render(wr io.Writer, context ...interface{}) (e os.Error) {
-	//var buf bytes.Buffer
-	var contextChain vector.Vector
+func (tmpl *Template) Render(wr io.Writer, context ...interface{}) (err error) {
+/*	var buf bytes.Buffer*/
+	var contextChain []reflect.Value
 	for _, c := range context {
 		val := reflect.ValueOf(c)
-		contextChain.Push(val)
+		contextChain = append(contextChain, val)
 	}
-	tmpl.renderTemplate(&contextChain, wr)
+	tmpl.renderTemplate(contextChain, wr)
 	return
 }
 
-func ParseString(data string) (*Template, os.Error) {
+func ParseString(data string) (*Template, error) {
 	cwd := os.Getenv("CWD")
-	tmpl := Template{data, "{{", "}}", 0, 1, cwd, new(vector.Vector)}
+	tmpl := Template{data, "{{", "}}", 0, 1, cwd, make([]interface{}, 0)}
 	err := tmpl.parse()
-
+	
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return &tmpl, err
 }
 
-func ParseFile(filename string) (*Template, os.Error) {
+func ParseFile(filename string) (*Template, error) {
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	dirname, _ := path.Split(filename)
-
-	tmpl := Template{string(data), "{{", "}}", 0, 1, dirname, new(vector.Vector)}
+	
+	tmpl := Template{string(data), "{{", "}}", 0, 1, dirname, make([]interface{}, 0)}
 	err = tmpl.parse()
-
+	
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return &tmpl, nil
 }
 
-func RenderString(data string, wr io.Writer, context ...interface{}) (e os.Error) {
-	tmpl, e := ParseString(data)
-
-	if e != nil {
-		return
+func RenderString(data string, context ...interface{}) string {
+	tmpl, err := ParseString(data)
+	var buf bytes.Buffer
+	
+	if err != nil {
+		return err.Error()
 	}
-
-	return tmpl.Render(wr, context...)
+	
+	tmpl.Render(&buf, context...)
+	return buf.String()
 }
 
-func RenderFile(filename string, wr io.Writer, context ...interface{}) (e os.Error) {
-	tmpl, e := ParseFile(filename)
-
-	if e != nil {
-		return e
+func RenderFile(filename string, context ...interface{}) string {
+	tmpl, err := ParseFile(filename)
+	var buf bytes.Buffer
+	
+	if err != nil {
+		return err.Error()
 	}
-
-	return tmpl.Render(wr, context...)
+	
+	tmpl.Render(&buf, context...)
+	return buf.String()
 }

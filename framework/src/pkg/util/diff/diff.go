@@ -2,31 +2,31 @@
 package main
 
 import (
-	"io"
-	"fmt"
 	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
 )
 
 type Diff struct {
-	Line int // Line that was added or removed
-	Added bool // Was the line added (true), or removed (false)?
+	Line    int    // Line that was added or removed
+	Added   bool   // Was the line added (true), or removed (false)?
 	Content string // Line content after the change
 }
 
 func DiffReaders(original, end io.Reader) []Diff {
 	origb, _ := ioutil.ReadAll(original)
 	endb, _ := ioutil.ReadAll(end)
-	
+
 	DiffBytes(origb, endb)
-	
+
 	return nil
 }
 
 func DiffBytes(origb, endb []byte) []Diff {
-	origl := bytes.Split(origb, []byte("\n"), -1)
-	endl  := bytes.Split(endb, []byte("\n"), -1)
-	
+	origl := bytes.Split(origb, []byte("\n"))
+	endl := bytes.Split(endb, []byte("\n"))
+
 	// Check if the streams are at all different
 	// Do length check first for efficiency reasons.
 	if len(origl) == len(endl) {
@@ -35,7 +35,7 @@ func DiffBytes(origb, endb []byte) []Diff {
 			return nil
 		}
 	}
-	
+
 	for i, _ := range origl {
 		if i >= len(endl) {
 			fmt.Println("Out of range panic coming up!")

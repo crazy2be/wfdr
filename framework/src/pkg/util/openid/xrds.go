@@ -1,17 +1,17 @@
 package openid
 
 import (
-	"xml"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"strings"
 )
 
 type XRDSIdentifier struct {
-        XMLName xml.Name "Service"
-        Type []string
-        URI string
-        LocalID string
+	XMLName xml.Name "Service"
+	Type    []string
+	URI     string
+	LocalID string
 }
 type XRD struct {
 	XMLName xml.Name "XRD"
@@ -19,15 +19,15 @@ type XRD struct {
 }
 type XRDS struct {
 	XMLName xml.Name "XRDS"
-	XRD XRD
+	XRD     XRD
 }
 
-func (o *OpenID) ParseXRDS(r io.Reader){
+func (o *OpenID) ParseXRDS(r io.Reader) {
 	XRDS := new(XRDS)
 	err := xml.Unmarshal(r, XRDS)
 	if err != nil {
-		fmt.Printf(err.String())
-                return
+		fmt.Printf(err.Error())
+		return
 	}
 	XRDSI := XRDS.XRD.Service
 
@@ -36,7 +36,7 @@ func (o *OpenID) ParseXRDS(r io.Reader){
 
 	fmt.Printf("%v\n", XRDSI)
 
-	if StringTableContains(XRDSI.Type,"http://specs.openid.net/auth/2.0/server") {
+	if StringTableContains(XRDSI.Type, "http://specs.openid.net/auth/2.0/server") {
 		o.OPEndPoint = XRDSI.URI
 		fmt.Printf("OP Identifier Element found\n")
 	} else if StringTableContains(XRDSI.Type, "http://specs.openid.net/auth/2.0/signon") {
@@ -46,9 +46,8 @@ func (o *OpenID) ParseXRDS(r io.Reader){
 	}
 }
 
-
-func StringTableContains (t []string, s string) bool {
-	for _,v := range t {
+func StringTableContains(t []string, s string) bool {
+	for _, v := range t {
 		if v == s {
 			return true
 		}

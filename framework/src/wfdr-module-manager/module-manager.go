@@ -2,10 +2,9 @@
 package main
 
 import (
-	"os"
-	"log"
-	"fmt"
 	"flag"
+	"fmt"
+	"log"
 	"strings"
 	// Local imports
 	//"util/osutil"
@@ -41,10 +40,10 @@ func main() {
 	}
 }
 
-func StartModule(name string) os.Error {
+func StartModule(name string) error {
 	client, err := moduled.RPCConnect()
 	if err != nil {
-		log.Fatal(err.String()+". In all likelyhood, wfdr-deamon is not running. Start it and this error should go away! It's also possible that you don't have permission to talk to the deamon process, in which case i can't help you.")
+		log.Fatal(err.Error() + ". In all likelyhood, wfdr-deamon is not running. Start it and this error should go away! It's also possible that you don't have permission to talk to the deamon process, in which case i can't help you.")
 	}
 	var dummy *int
 	err = client.Call("ModuleSrv.Start", &name, dummy)
@@ -54,7 +53,7 @@ func StartModule(name string) os.Error {
 	return err
 }
 
-func StopModule(name string) os.Error {
+func StopModule(name string) error {
 	client, err := moduled.RPCConnect()
 	if err != nil {
 		log.Fatal(err)
@@ -67,11 +66,11 @@ func StopModule(name string) os.Error {
 	return err
 }
 
-func handleError(err os.Error, verb, name string) {
+func handleError(err error, verb, name string) {
 	// WARNING: HACK HACK HACK
-	if strings.Index(err.String(), "Unmarshal") != -1 {
+	if strings.Index(err.Error(), "Unmarshal") != -1 {
 		return
 	}
 	fmt.Println("Error "+verb+" module", name, ":", err)
-	
+
 }
