@@ -67,22 +67,7 @@ func main() {
 		}
 	}
 
-	errchan := make(chan error, 100)
-	donechan := make(chan bool, 1)
-
-	go func() {
-		for {
-			select {
-			case err := <-errchan:
-				fmt.Println("Error in walker:", err)
-			case <-donechan:
-				return
-			}
-		}
-	}()
-
-	filepath.Walk(sourceDir, &v, errchan)
-	donechan <- true
+	filepath.Walk(sourceDir, filepath.WalkFunc(func (pat string, fi os.FileInfo, err error) error {return v.Visit(pat, fi, err)}))
 
 	if v.deamon {
 		v.InotifyLoop()
@@ -143,6 +128,18 @@ func (v *Visitor) WatcherEvent(ev *inotify.Event) {
 	//log.Println(ev)
 }
 
+func (v *Visitor) Visit(pat string, fi os.FileInfo, err error) error {
+	if err != nil {
+		log.Fatal("Error walking directory path: ", err.Error())
+	}
+	if fi.Mode().IsDir() {
+		v.VisitDir(pat, fi)
+	} else {
+		v.VisitFile(pat, fi)
+	}
+	return nil
+}
+
 func (v *Visitor) VisitDir(dirpath string, fi os.FileInfo) bool {
 	// Only do something if in deamon mode.
 	if !v.deamon {
@@ -183,7 +180,7 @@ func (v *Visitor) CheckFile(layout string, fi os.FileInfo) {
 		v.ReloadFile(layout)
 		return
 	}
-	if cachefi.ModTime() < fi.ModTime() {
+	if cachefi.ModTime().Before(fi.ModTime()) {
 		fmt.Println("Reloading file:", fpath)
 		v.ReloadFile(layout)
 	} else {
