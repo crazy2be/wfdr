@@ -2,20 +2,21 @@
 package main
 
 import (
-	"io"
-	"os"
-	"log"
-	"json"
-	"fmt"
-	"time"
+	"encoding/json"
 	"flag"
-	"strings"
+	"fmt"
+	"io"
+	"log"
+	"os"
 	"strconv"
+	"strings"
+	"time"
 	// Local imports
-	"util/picasa"
 	"github.com/crazy2be/iomod"
 	"github.com/crazy2be/jsonutil"
+	"util/picasa"
 )
+
 // The URL to request the albums from. Note that ?alt=json is added to this.
 const userFeedURL = "http://picasaweb.google.com/data/feed/api/user/default"
 
@@ -39,11 +40,11 @@ type JSONPhoto struct {
 		Type string
 	}
 	RelLink struct {
-		Root string // TODO
+		Root     string // TODO
 		Relative string // relitive to photos page
 	}
 	Link []struct {
-		Rel string
+		Rel  string
 		Type string
 		Href string
 	}
@@ -64,10 +65,10 @@ type JSONPhoto struct {
 			Url    string
 			Type   string
 			Medium string
-			Width int
+			Width  int
 			Height int
 		}
-		MediaScredit  []struct {
+		MediaScredit []struct {
 			ST string
 		}
 		MediaSdescription struct {
@@ -87,9 +88,9 @@ type UserFeed struct {
 	}
 }
 type AlbumFeed struct {
-  Feed struct {
-    Entry []JSONPhoto
-  }
+	Feed struct {
+		Entry []JSONPhoto
+	}
 }
 
 // Defined like this so that moving the actual definitions to an external file doesn't break things.
@@ -102,18 +103,18 @@ func main() {
 	// Makes the data directory first if it does not exist
 	os.MkdirAll("data/picasa/albums", 0755)
 	os.MkdirAll("data/picasa/albumsHD", 0755)
-	
+
 	var albumName string
 	flag.StringVar(&albumName, "album", "all", "Specify a specific album to update, according to picasa ID. This is a series of numbers that probably looks something like 5510949320. You can optionally also specify a name, such as \"WinterFormalCouples2010\" If you only want to update the index, specify \"list\" in place of an ID. If you want to update all albums, you don't have to specify this command-line option.")
 	flag.Parse()
-	
+
 	if albumName == "all" {
 		fmt.Println("::Updating All Albums::")
 		albums, albumsHD := updateList()
-		for _, album := range(albums) {
+		for _, album := range albums {
 			updateAlbum(album.AlbumId, album.Link)
 		}
-		for _, album := range (albumsHD) {
+		for _, album := range albumsHD {
 			updateAlbum(album.AlbumId, album.Link)
 		}
 		return
@@ -124,21 +125,21 @@ func main() {
 		return
 	}
 	fmt.Printf("::Attempting to Update Album %s::\n", albumName)
-	
+
 	var albums []picasa.Album
 	albumsFilename := "data/picasa/albums.json"
 	jsonutil.DecodeFromFile(albumsFilename, &albums)
-	
-	for _, album := range(albums) {
+
+	for _, album := range albums {
 		if album.AlbumId == albumName ||
-		   album.Link == albumName {
-				updateAlbum(album.AlbumId, album.Link)
+			album.Link == albumName {
+			updateAlbum(album.AlbumId, album.Link)
 		}
 	}
 }
 
 func updateList() (albums []Album, albumsHD []Album) {
-	var err os.Error
+	var err error
 	albums, albumsHD, err = getAlbums()
 	if err != nil {
 		log.Fatal("Error updating album list: ", err)
@@ -155,14 +156,14 @@ func updateAlbum(id, link string) {
 	photos, _ := getPhotos(id)
 	photosFilename := ""
 	if isHD(link) {
-		photosFilename = "data/picasa/albumsHD/"+link+".json"
+		photosFilename = "data/picasa/albumsHD/" + link + ".json"
 	} else {
-		photosFilename = "data/picasa/albums/"+link+".json"
+		photosFilename = "data/picasa/albums/" + link + ".json"
 	}
 	jsonutil.EncodeToFile(photosFilename, photos)
 }
 
-func getAlbums() (albums []Album, albumsHD []Album, e os.Error) {
+func getAlbums() (albums []Album, albumsHD []Album, e error) {
 	feed, e := getUserFeed()
 	albumNum := len(feed.Feed.Entry)
 	albumNumHD := 0
@@ -183,7 +184,7 @@ func getAlbums() (albums []Album, albumsHD []Album, e os.Error) {
 	// in the struct for external usage (Album).
 	i := 0
 	j := 0
-	for _, entry := range(feed.Feed.Entry) {
+	for _, entry := range feed.Feed.Entry {
 		var album Album //= &albums[i]
 		album.Title = entry.Title.ST
 		album.Summary = entry.Summary.ST
@@ -207,7 +208,7 @@ func isHD(albumLink string) bool {
 	return albumLink[len(albumLink)-2:] == "HD"
 }
 
-func getPhotos(albumid string) (photos []Photo, e os.Error) {
+func getPhotos(albumid string) (photos []Photo, e error) {
 	feed, e := getAlbumFeed(albumid)
 	photos = make([]Photo, len(feed.Feed.Entry))
 	if e != nil {
@@ -216,7 +217,7 @@ func getPhotos(albumid string) (photos []Photo, e os.Error) {
 	}
 	fmt.Printf("Number of photos in album %s: %d\n", albumid, len(photos))
 	hasCover := false
-	for i, entry := range(feed.Feed.Entry) {
+	for i, entry := range feed.Feed.Entry {
 		if strings.ToLower(entry.Title.ST) == "cover.jpg" {
 			hasCover = true
 			continue
@@ -234,15 +235,16 @@ func getPhotos(albumid string) (photos []Photo, e os.Error) {
 		photo.Thumbnails.Large = g.MediaSthumbnail[2]
 		var modified, e = picasa.ParseTimestamp(entry.Updated.ST)
 		if e != nil {
-			fmt.Printf("WARNING: Error parsing time string %s with format %s: %s", entry.Updated.ST, jsonTimeFormat, e) 
+			fmt.Printf("WARNING: Error parsing time string %s with format %s: %s", entry.Updated.ST, jsonTimeFormat, e)
 		} else {
 			photo.Modified = modified
 		}
-		timestamp, e :=  strconv.Atoi64(entry.GphotoStimestamp.ST)
-		photo.Published = time.SecondsToLocalTime(timestamp/1000)
+		timestamp, e := strconv.ParseInt(entry.GphotoStimestamp.ST, 10, 64)
+		photo.Published = time.Unix(timestamp/1000, 0)
+
 		//fmt.Printf("Published: %s\n", photo.Published)
 		if e != nil {
-			fmt.Printf("WARNING: Error parsing time string %s into local date: %s", entry.GphotoStimestamp.ST, e) 
+			fmt.Printf("WARNING: Error parsing time string %s into local date: %s", entry.GphotoStimestamp.ST, e)
 		}
 	}
 	if hasCover {
@@ -252,7 +254,7 @@ func getPhotos(albumid string) (photos []Photo, e os.Error) {
 }
 
 // This one is internal.
-func getUserFeed() (UserFeed, os.Error) {
+func getUserFeed() (UserFeed, error) {
 	// Replace $ with S in the incoming JSON... Go doesn't like $ in variable names
 	var rep = iomod.NewReplacer(getUserFeedReader(), "\\$", "S")
 	var dec = json.NewDecoder(rep)
@@ -265,15 +267,15 @@ func getUserFeed() (UserFeed, os.Error) {
 	return feed, e
 }
 
-func getAlbumFeed(name string) (feed AlbumFeed, e os.Error) {
-  var rawFeed = iomod.NewReplacer(getAlbumFeedReader(name), "\\$", "S")
-  var feedDecoder = json.NewDecoder(rawFeed)
-  e = feedDecoder.Decode(&feed)
-  if e != nil {
+func getAlbumFeed(name string) (feed AlbumFeed, e error) {
+	var rawFeed = iomod.NewReplacer(getAlbumFeedReader(name), "\\$", "S")
+	var feedDecoder = json.NewDecoder(rawFeed)
+	e = feedDecoder.Decode(&feed)
+	if e != nil {
 		fmt.Println("Retrieving album feed for", name)
 		fmt.Println("Error:", e)
 	}
-  return
+	return
 }
 
 func getUserFeedReader() io.Reader {
@@ -283,30 +285,30 @@ func getUserFeedReader() io.Reader {
 func getFeedReader(name string) io.Reader {
 	// Dial and send headers
 	conn, e := picasa.Dial("picasaweb.google.com")
-	
+
 	Path := ""
 	QueryString := "alt=json"
 	// We are requesting an album, not the list of albums.
 	if name != "" {
-		Path = "/albumid/"+name
+		Path = "/albumid/" + name
 	} else {
-		QueryString = "type=album&"+QueryString
+		QueryString = "type=album&" + QueryString
 	}
 	URL := userFeedURL + Path + "?" + QueryString
-	
-	fmt.Fprintln(conn, "GET " + URL + " HTTP/1.1")
+
+	fmt.Fprintln(conn, "GET "+URL+" HTTP/1.1")
 	fmt.Fprintln(conn, "Authorization:", "AuthSub", "token=\""+picasaAuthSubToken+"\"")
 	fmt.Fprintln(conn, "")
-	
+
 	//fmt.Println("Sent request")
 	// Get the response. We can't close the connection yet, or the data will not all be read.
 	resp, e := picasa.ReadFrom(conn, "GET")
 	if e != nil {
 		fmt.Println("Error!", e)
 	}
-	
+
 	fmt.Printf("Requesting URL %s from picasa\n", URL)
-	
+
 	return resp.Body
 }
 

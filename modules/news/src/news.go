@@ -1,18 +1,18 @@
 package main
 
 import (
-	"http"
 	"fmt"
+	"net/http"
 	// Local imports
-	"util/template"
 	"github.com/crazy2be/perms"
 	"util/pages"
+	"util/template"
 	//"util/dlog"
 )
 
 func checkPerms(c http.ResponseWriter, r *http.Request, name string) bool {
-	r.URL.Path = "/news/edit/"+name
-	
+	r.URL.Path = "/news/edit/" + name
+
 	p := perms.GetPerms(r)
 	if !p.Write {
 		fmt.Fprintln(c, "Access Denied")
@@ -24,11 +24,11 @@ func checkPerms(c http.ResponseWriter, r *http.Request, name string) bool {
 func SaveHandler(c http.ResponseWriter, r *http.Request) {
 	oldname := r.FormValue("oldname")
 	name := r.FormValue("name")
-	
+
 	if !checkPerms(c, r, name) {
 		return
 	}
-	
+
 	// Make sure the user has permission to delete the old event as well.
 	if oldname != name && len(oldname) > 0 {
 		if !checkPerms(c, r, name) {
@@ -39,10 +39,10 @@ func SaveHandler(c http.ResponseWriter, r *http.Request) {
 			oldpage.Delete()
 		}
 	}
-	
+
 	content := []byte(r.FormValue("content"))
 	title := []byte(r.FormValue("title"))
-	
+
 	e := pages.SavePage(name, content, title)
 	if e != nil {
 		fmt.Fprintln(c, e)
@@ -56,10 +56,10 @@ func EditHandler(c http.ResponseWriter, r *http.Request) {
 		template.Error404(c, r, nil)
 		return
 	}
-	pagePath := r.URL.Path[len("/news/"):len(r.URL.Path)-len("/edit")]
+	pagePath := r.URL.Path[len("/news/") : len(r.URL.Path)-len("/edit")]
 	fmt.Println(pagePath)
 	pageData, _ := pages.GetPageData(pagePath, r)
-	
+
 	template.Render(c, r, "Editing "+pageData.Title, "edit", pageData)
 }
 
@@ -95,7 +95,7 @@ func Handler(c http.ResponseWriter, r *http.Request) {
 		ArticleHandler(c, r)
 		return
 	}
-	
+
 	plist := pages.GetPageList()
 	template.Render(c, r, "News", "main", plist)
 	return

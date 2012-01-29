@@ -1,7 +1,7 @@
 package main
 
 import (
-	"http"
+	"net/http"
 	// Local imports
 	"util/template"
 )

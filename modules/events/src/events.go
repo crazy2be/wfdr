@@ -1,33 +1,35 @@
 package main
 
 import (
-	"http"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"json"
-	"time"
-	"sort"
-	"os"
 	"log"
+	"net/http"
+	"os"
+	"sort"
 	"strconv"
+	"time"
 	// Local imports
-	tmpl "util/template"
 	"util/pages"
+	tmpl "util/template"
 	//"util/perms"
 )
 
-type Time time.Time
+type Time struct {
+	time.Time
+}
 
 func (t *Time) String() string {
 	if t == nil {
 		return ""
 	}
-	ti := time.Time(*t)
-	return ti.Format(timeFormat)
+	return t.Format(timeFormat)
 }
 
 func (t *Time) SimpleString() string {
 	weekday := "Unknown"
-	switch t.Weekday {
+	switch t.Weekday() {
 	case 0:
 		weekday = "Sunday"
 	case 1:
@@ -44,7 +46,7 @@ func (t *Time) SimpleString() string {
 		weekday = "Saturday"
 	}
 	suffix := "th"
-	switch t.Day % 10 {
+	switch t.Day() % 10 {
 	case 1:
 		suffix = "st"
 	case 2:
@@ -52,7 +54,7 @@ func (t *Time) SimpleString() string {
 	case 3:
 		suffix = "rd"
 	}
-	day := strconv.Itoa(t.Day)
+	day := strconv.Itoa(t.Day())
 	return weekday + " the " + day + suffix
 }
 
@@ -61,7 +63,7 @@ type Event struct {
 	Title      string
 	Desc       string // Should be a []byte, but mustache doesn't seem to display that how i'd like..
 	Link       string
-	Time       *Time
+	Time       time.Time
 	Img        string
 	Importance int
 	PageData   *pages.PageData // nil on the main page.
@@ -79,7 +81,6 @@ func (e EventArray) Less(i, j int) bool {
 func (e EventArray) Swap(i, j int) {
 	e[i], e[j] = e[j], e[i]
 }
-
 
 type Filler struct {
 	Importance int
@@ -114,7 +115,7 @@ func getEvents() (events map[string]*Event) {
 	return
 }
 
-func saveEvents(events map[string]*Event) (e os.Error) {
+func saveEvents(events map[string]*Event) (e error) {
 	for _, event := range events {
 		e = event.Save()
 		if e != nil {
@@ -125,7 +126,7 @@ func saveEvents(events map[string]*Event) (e os.Error) {
 }
 
 // Loads the event data from disk. Caller MUST set event.ID before calling.
-func (event *Event) Load() (e os.Error) {
+func (event *Event) Load() (e error) {
 	fmt.Println(event.ID)
 	eventFile, e := os.Open("data/events/event/" + event.ID + ".json")
 	if e != nil {
@@ -144,14 +145,14 @@ func (event *Event) Load() (e os.Error) {
 }
 
 // Loads the page data and content. Seperate from Load() because it requires more time than just loading the basic data, and is not required on the main page.
-func (event *Event) LoadPage(r *http.Request) (e os.Error) {
+func (event *Event) LoadPage(r *http.Request) (e error) {
 	pageData, e := pages.GetPageData("events/"+event.ID, r)
 	event.PageData = pageData
 	return
 }
 
 // Saves the event data to disk. Caller must set event.ID before calling.
-func (event *Event) Save() (e os.Error) {
+func (event *Event) Save() (e error) {
 	id := event.ID
 	eventFile, e := os.Create("data/events/event/" + id + ".json")
 	if e != nil {
@@ -167,9 +168,9 @@ func (event *Event) Save() (e os.Error) {
 	return
 }
 
-func (event *Event) Delete() (e os.Error) {
+func (event *Event) Delete() (e error) {
 	if len(event.ID) <= 0 {
-		return os.NewError("Invalid ID!")
+		return errors.New("Invalid ID!")
 	}
 	e = os.Remove("data/events/event/" + event.ID + ".json")
 	return

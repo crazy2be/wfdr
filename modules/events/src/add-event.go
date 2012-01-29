@@ -1,15 +1,15 @@
 package main
 
 import (
-	"http"
-	"fmt"
-	"os"
-	"io"
-	"time"
 	"bytes"
-	"strconv"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"mime/multipart"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
 	// Local imports
 	//"util/auth"
 	"util/pages"
@@ -69,7 +69,7 @@ func saveFile(mpart *multipart.Part, id string) string {
 
 	if id == "" {
 		// WARNING: Chance of a name collision, althrough extremely unlikely.
-		id = strconv.Itoa64(time.Nanoseconds())
+		id = strconv.FormatInt(time.Now().UnixNano(), 10)
 	}
 
 	fileName := id + ext
@@ -163,7 +163,7 @@ func SaveHandler(c http.ResponseWriter, r *http.Request) {
 	event.Title = string(title)
 	event.Desc = string(desc)
 	event.Link = "/events/" + string(id)
-	event.Time = (*Time)(date)
+	event.Time = date
 	if len(fileName) > 0 {
 		event.Img = "/img/events/data/" + fileName
 	}

@@ -1,37 +1,37 @@
 package main
 
 import (
-  "http"
-  "fmt"
+	"fmt"
+	"net/http"
 	// Local imports
 	"github.com/crazy2be/user"
-  tmpl "util/template"
+	tmpl "util/template"
 )
 
 func Handler(c http.ResponseWriter, r *http.Request) {
-  var photosLen = len("/photos/")
-  // On the root
-  if len(r.URL.Path) == photosLen {
+	var photosLen = len("/photos/")
+	// On the root
+	if len(r.URL.Path) == photosLen {
 		MainHandler(c, r)
 		return
-  } else {
+	} else {
 		AlbumHandler(c, r)
 		return
-  }
+	}
 }
 
 func MainHandler(c http.ResponseWriter, r *http.Request) {
-    var albums = GetAlbums();
-    fmt.Printf("%d Albums\n", len(*albums));
-		tmpl.Render(c, r, "Photos", "main", &albums)
+	var albums = GetAlbums()
+	fmt.Printf("%d Albums\n", len(*albums))
+	tmpl.Render(c, r, "Photos", "main", &albums)
 }
 
 func AlbumHandler(c http.ResponseWriter, r *http.Request) {
-    var albumName = r.URL.Path[len("/photos/"):]
-    fmt.Printf("Album ID requested: %s\n", albumName)
-    var photos = GetPhotos(albumName)
-    fmt.Printf("%d Photos\n", len(photos))
-		tmpl.Render(c, r, "Photos - "+albumName, "album", &photos)
+	var albumName = r.URL.Path[len("/photos/"):]
+	fmt.Printf("Album ID requested: %s\n", albumName)
+	var photos = GetPhotos(albumName)
+	fmt.Printf("%d Photos\n", len(photos))
+	tmpl.Render(c, r, "Photos - "+albumName, "album", &photos)
 }
 
 type UploaderData struct {
@@ -40,16 +40,16 @@ type UploaderData struct {
 	PicasaAuthenticated bool
 }
 
-func UploaderHandler(c http.ResponseWriter, r* http.Request) {
+func UploaderHandler(c http.ResponseWriter, r *http.Request) {
 	u, _ := user.Get(c, r)
 	token := u.Get("picasa-authsub-token")
 	fmt.Println("Host:", r.Host)
 	albums := GetAlbums()
-	
+
 	data := new(UploaderData)
 	data.Albums = albums
 	data.PicasaAuthenticated = (token != "")
 	// TODO: Make photos use the new login system.
-	
+
 	tmpl.Render(c, r, "Upload Photos", "uploader", data)
 }

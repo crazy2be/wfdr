@@ -1,8 +1,8 @@
 package main
 
 import (
-	"http"
 	"fmt"
+	"net/http"
 	// Local imports
 	"util/template"
 )

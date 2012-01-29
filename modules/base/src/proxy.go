@@ -1,29 +1,30 @@
 package main
 
 import (
-	"net"
-	"time"
-	//	"json"
-	"http"
 	"bufio"
 	"bytes"
-	"sync"
+	"encoding/json"
 	"fmt"
-	"os"
 	"io"
-	"strings"
 	"log"
-	"json"
+	"net"
+	"net/http"
+	"os"
+	"strings"
+	"sync"
+	"time"
 	// Local imports
-	tmpl "util/template"
-	"github.com/crazy2be/httputil"
 	"github.com/crazy2be/browser"
+	"github.com/crazy2be/httputil"
+	tmpl "util/template"
 )
 
 var Servers = make(map[string]string, 10)
+
 // Map operations are not atomic in go.
 var ServerLock sync.Mutex
 var FileDirs = []string{"js", "css", "img"}
+
 // URLs to allow through the firewall without authentication. Must match *exactly*!
 var WhiteList = []string{"/pages/tos"}
 
@@ -59,12 +60,12 @@ func main() {
 			defer conn.Close()
 			bufreader := bufio.NewReader(conn)
 			for {
-				startTime := time.Nanoseconds()
+				startTime := time.Now().UnixNano()
 				info, e := handleRequest(conn, bufreader)
 				if e != nil {
 					return
 				}
-				endTime := time.Nanoseconds()
+				endTime := time.Now().UnixNano()
 				deltaTime := float64(endTime-startTime) / (1000 * 1000 * 1000)
 
 				info.TotalTime = deltaTime
@@ -111,7 +112,7 @@ func getFilePath(r *http.Request) string {
 	return path
 }
 
-func handleRequest(c net.Conn, bufreader *bufio.Reader) (info *logInfo, e os.Error) {
+func handleRequest(c net.Conn, bufreader *bufio.Reader) (info *logInfo, e error) {
 	req, e := http.ReadRequest(bufreader)
 	if e != nil {
 		fmt.Println("Error reading HTTP request,", e)
@@ -122,7 +123,7 @@ func handleRequest(c net.Conn, bufreader *bufio.Reader) (info *logInfo, e os.Err
 	info.Path = req.URL.Path
 	info.Source = c.RemoteAddr().String()
 	info.Referrer = req.Referer()
-	info.ReqTime = time.Nanoseconds()
+	info.ReqTime = time.Now().UnixNano()
 	// The first directory, Split splits it a request for /css/main.css into "", "css", and "main.css".
 	SubURL := strings.Split(req.URL.Path, "/")[1]
 	// Check if the request URL matches one of the defined "file" URLs on the system. If it does, serve right away without any additional checks (for speed).
@@ -218,8 +219,9 @@ func dialServer(c net.Conn, r *http.Request, addr string) {
 	//serverconn.Close()
 
 }
+
 // TODO: These should really be moved to external files, perhaps mustache templates.
-func error503(c net.Conn, r *http.Request, e os.Error) {
+func error503(c net.Conn, r *http.Request, e error) {
 	fmt.Println("Error dialing server:", e)
 	httpError(c, r, "503", "Service Unavailable")
 }
@@ -263,7 +265,7 @@ func runLogger() {
 	// Make logging directory
 	os.MkdirAll("log/server", 0755)
 
-	localt := time.LocalTime()
+	localt := time.Now()
 	lfname := localt.Format("2006-01-02 15:04:05")
 
 	lfile, err := os.Create("log/server/" + lfname)

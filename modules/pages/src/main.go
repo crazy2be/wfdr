@@ -1,13 +1,13 @@
 package main
 
 import (
-	"strings"
-	"http"
 	"fmt"
+	"net/http"
+	"strings"
 	// Local imports
-	tmpl "util/template"
 	"github.com/crazy2be/perms"
 	"util/pages"
+	tmpl "util/template"
 )
 
 func SaveHandler(c http.ResponseWriter, r *http.Request) {
@@ -16,16 +16,16 @@ func SaveHandler(c http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(c, "Access Denied")
 		return
 	}
-	
+
 	pageName := r.URL.Path[len("/pages/"):]
-	
+
 	if strings.Index(pageName, ".") != -1 {
 		return
 	}
-	
+
 	content := []byte(r.FormValue("content"))
 	title := []byte(r.FormValue("title"))
-	
+
 	e := pages.SavePage(pageName, content, title)
 	if e != nil {
 		fmt.Fprintln(c, e)
@@ -37,19 +37,19 @@ func EditHandler(c http.ResponseWriter, r *http.Request) {
 	//var p tmpl.PageInfo
 	//p.Name = "pages/edit"
 	//p.Request = r
-	
+
 	//perms := auth.GetPerms(r)
 	//p.Perms = perms
-	
-	pagePath := r.URL.Path[len("/pages/"):len(r.URL.Path)-len("/edit")]
+
+	pagePath := r.URL.Path[len("/pages/") : len(r.URL.Path)-len("/edit")]
 	fmt.Println(pagePath)
 	pageData, _ := pages.GetPageData(pagePath, r)
 	//if e != nil {
 	//	p.Name = "errors/404"
 	//}
-	
+
 	//p.Object = pageData
-	
+
 	fmt.Println("Request for pages server. Responding.")
 	tmpl.Render(c, r, "Editinng "+pageData.Title, "edit", pageData)
 }
@@ -75,7 +75,7 @@ func Handler(c http.ResponseWriter, r *http.Request) {
 		ListHandler(c, r)
 		return
 	}
-	
+
 	pageData, e := pages.GetPageData(r.URL.Path[len("/pages/"):], r)
 	if e != nil {
 		// TODO: 404 Error
