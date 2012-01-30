@@ -1,11 +1,11 @@
 {{>shared/html-header}}
   {{>shared/head-header}}
+    <link rel="stylesheet" type="text/css" href="/css/main/base.css" />
+    <link rel="stylesheet" type="text/css" href="/css/slider.css" />
+
     <script type="text/javascript" src="/js/jquery.easing.1.2.js"></script>
     <script type="text/javascript" src="/js/jquery.anythingslider.js" charset="utf-8"></script>
     <script type="text/javascript" src="/js/main/main.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="/css/main/base.css" />
-    <link rel="stylesheet" type="text/css" href="/css/slider.css" />
   {{>shared/head-end}}
   {{>shared/body-header}}
     {{>slideshow}}

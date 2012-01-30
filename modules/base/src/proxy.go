@@ -87,10 +87,9 @@ func getFilePath(r *http.Request) string {
 		}
 
 		mobpath := "cache/" + pathsec[0] + "/mobile/" + pathsec[1]
-		f, e := os.Open(mobpath)
-		f.Close()
-
-		if e == nil {
+		f, err := os.Open(mobpath)
+		if err == nil {
+			f.Close()
 			return mobpath
 		}
 	} else {
@@ -102,9 +101,9 @@ func getFilePath(r *http.Request) string {
 
 		deskpath := "cache/" + pathsec[0] + "/desktop/" + pathsec[1]
 		f, e := os.Open(deskpath)
-		f.Close()
 
 		if e == nil {
+			f.Close()
 			return deskpath
 		}
 
@@ -205,6 +204,11 @@ func dialServer(c net.Conn, r *http.Request, addr string) {
 	if e != nil {
 		error503(c, r, e)
 		return
+	}
+	ct := resp.Header.Get("Content-Type")
+	fmt.Println("Content-Type of response:", ct)
+	if ct.Contains("text/xml") {
+		resp.Header.Set("Content-Type", "text/html; charset=utf-8")
 	}
 	//resp.AddHeader("Connection", "close")
 	//resp.ProtoMinor = 0

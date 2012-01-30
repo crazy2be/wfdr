@@ -2,6 +2,7 @@
 //
 
 $(document).ready(function() {
+	console.log("First document ready");
 	$("#google-search input").focus();
 	/*$("h2").wrapInner("<span>")
 	$("h2 br")
@@ -53,6 +54,7 @@ function search(query) {
 }
 
 $(document).ready(function() {
+	console.log("Document ready");
 	previousValue = ''
 	animating = false;
 	stuffHidden = false;
