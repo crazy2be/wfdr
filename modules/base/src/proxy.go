@@ -207,7 +207,7 @@ func dialServer(c net.Conn, r *http.Request, addr string) {
 	}
 	ct := resp.Header.Get("Content-Type")
 	fmt.Println("Content-Type of response:", ct)
-	if ct.Contains("text/xml") {
+	if strings.Contains(ct, "text/xml") {
 		resp.Header.Set("Content-Type", "text/html; charset=utf-8")
 	}
 	//resp.AddHeader("Connection", "close")
