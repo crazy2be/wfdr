@@ -19,6 +19,7 @@ framework/src/pkg/util/diff/diff
 util/pipe-test/pipe-test
 # A bunch of other things to ignore.
 *~
+*.kate-swp
 *.a
 *.o
 *.8
