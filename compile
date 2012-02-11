@@ -113,33 +113,30 @@ parser.AddFlag('clean', help="Rather than building, clean all files from the bui
 args = parser.Parse()
 
 # First, install everything required
-step("Fetching required packages with goinstall")
+step("Installing framework...")
 
-f = open('framework/src/goinstalls')
-for line in f:
-	cmd = "goinstall"
-	if args['update']:
-		cmd += " -u"
-	if args['clean']:
-		cmd += ' -clean'
-	if run(cmd+' '+line, "Failed to goinstall package!"):
-		sys.exit(1)
-
-
-os.chdir('framework/src')
-
+cmd = "go install"
+if args['update']:
+	cmd += " -u"
 if args['clean']:
-	step("Cleaning existing framework pacakges and commands")
-	if run('gomake clean', 'Cleaning existing packages failed!'):
-		print "Continuing happily..."
-
-# Next, compile framework packages and commands
-step("Compiling framework packages and commands")
-
-if run('gomake', "Build failed :("):
+	cmd += ' -clean'
+if run(cmd + " all", "Failed to goinstall package!"):
 	sys.exit(1)
 
-os.chdir('../..')
+#os.chdir('framework/src')
+
+#if args['clean']:
+	#step("Cleaning existing framework pacakges and commands")
+	#if run('gomake clean', 'Cleaning existing packages failed!'):
+		#print "Continuing happily..."
+
+## Next, compile framework packages and commands
+#step("Compiling framework packages and commands")
+
+#if run('gomake', "Build failed :("):
+	#sys.exit(1)
+
+#os.chdir('../..')
 
 # Finally, compile the actual modules
 step("Compiling modules")
@@ -148,11 +145,8 @@ wfdrcmd = 'compile'
 if args['clean']:
 	wfdrcmd = 'recompile'
 
-if run('wfdr '+wfdrcmd+' all', "Attempting to "+wfdrcmd+" modules failed"):
+if run('wfdr '+wfdrcmd+' all', "Attempting to "+wfdrcmd+" modules failed. Please ensure that $GOPATH/bin is in your $PATH!"):
 	sys.exit(1)
-	#print "Because it might be a module you don't care about, we're continuing happily :)"
-	#print "Although you might want to look into the issue..."
-
 
 header2("DONE!")
 print "Framework has been built! To run it, start the daemon in one terminal using wfdr-daemon, and then control modules using the wfdr command."
