@@ -5,10 +5,10 @@ import (
 )
 
 type CalcPathTest struct {
-	root string
+	root      string
 	subfolder string
-	fullpath string
-	expected *Path
+	fullpath  string
+	expected  *Path
 }
 
 var calcPathTests = []CalcPathTest{
@@ -19,8 +19,8 @@ var calcPathTests = []CalcPathTest{
 		&Path{
 			"modules/events/css",
 			"desktop",
-			".", 
-			".", 
+			".",
+			".",
 			"foo.css",
 		},
 	},
@@ -28,7 +28,7 @@ var calcPathTests = []CalcPathTest{
 		"modules/events/js/",
 		"",
 		"modules/events/css/mobile/somefolder/foo.css",
-		&Path {
+		&Path{
 			"modules/events/js",
 			"mobile",
 			".",
@@ -40,7 +40,7 @@ var calcPathTests = []CalcPathTest{
 		"cache/js/",
 		"pages",
 		"cache/js/desktop/pages/foo.css",
-		&Path {
+		&Path{
 			"cache/js",
 			"desktop",
 			"pages",
@@ -55,10 +55,10 @@ func TestCalcPath(t *testing.T) {
 		result := CalcPath(test.root, test.subfolder, test.fullpath)
 		// Ugly.
 		fail := result.root != test.expected.root ||
-						result.layout != test.expected.layout ||
-						result.subfolder != test.expected.subfolder ||
-						result.extra != test.expected.extra ||
-						result.file != test.expected.file
+			result.layout != test.expected.layout ||
+			result.subfolder != test.expected.subfolder ||
+			result.extra != test.expected.extra ||
+			result.file != test.expected.file
 		if fail {
 			t.Errorf("Expected %#v\n Got %#v\n Test %#v", test.expected, result, test)
 		}
@@ -66,15 +66,15 @@ func TestCalcPath(t *testing.T) {
 }
 
 type IsSubPathTest struct {
-	full string
-	short string
+	full     string
+	short    string
 	expected bool
 }
 
-var isSubPathTests = []IsSubPathTest {
-	{ "/foo/blar", "/foo", true },
-	{ "/foo", "/blar", false },
-	{ "foo/blar", "foo/", true },
+var isSubPathTests = []IsSubPathTest{
+	{"/foo/blar", "/foo", true},
+	{"/foo", "/blar", false},
+	{"foo/blar", "foo/", true},
 }
 
 func TestIsSubPath(t *testing.T) {

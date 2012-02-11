@@ -34,7 +34,7 @@ func Open(pipename string) (*os.File, error) {
 		return nil, errors.New(fmt.Sprint("Error stating pipe ", pipename, ": ", err))
 	}
 
-	if finfo.Mode() & os.ModeNamedPipe != os.ModeNamedPipe {
+	if finfo.Mode()&os.ModeNamedPipe != os.ModeNamedPipe {
 		return nil, errors.New(fmt.Sprint("Specified pipe file ", pipename, " is not a named pipe type file! Remove it to have a pipe file created in it's place."))
 	}
 

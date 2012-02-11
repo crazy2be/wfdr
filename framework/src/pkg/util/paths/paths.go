@@ -4,8 +4,8 @@ package paths
 // This package is useless until generics are implemented...
 
 import (
-	"sort"
 	"fmt"
+	"sort"
 	//"path"
 	//"reflect"
 	//"log"
@@ -33,7 +33,7 @@ type Pather interface {
 
 type Pathers []Pather
 
-func (this Pathers) Len() int { 
+func (this Pathers) Len() int {
 	return len(this)
 }
 func (this Pathers) Less(i, j int) bool {
@@ -64,8 +64,8 @@ func Match(pattern, path string) bool {
 }
 
 // Searches through the list of patterns (should be sorted via a call to Sort() first), and returns the first one that matches. If no match is located, nil is returned.
-func FindMatch(patterns []Pather, path string) (Pather) {
-	for _, pattern := range(patterns) {
+func FindMatch(patterns []Pather, path string) Pather {
+	for _, pattern := range patterns {
 		if Match(pattern.Path(), path) {
 			// TODO: Caching
 			fmt.Println("Found match for path", path, ":", pattern.Path())

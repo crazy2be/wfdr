@@ -3,9 +3,9 @@ package fnotify
 // Provides a more convenient binding to the inotify API that utilizes callback functions rather than a polling loop, and is thus more condusive to a web-based enviroment, where most things are operating as callbacks anyway.
 
 import (
+	"exp/inotify"
 	"fmt"
 	"log"
-	"exp/inotify"
 	"sort"
 	"strings"
 	// Local imports

@@ -1,12 +1,12 @@
 package picasa
 
 import (
-	"net/http"
-	"net/url"
 	"bufio"
-	"time"
 	"fmt"
 	"net"
+	"net/http"
+	"net/url"
+	"time"
 )
 
 // The data structure used externally, including by templates. Should be succinct,
@@ -44,26 +44,27 @@ type Album struct {
 }
 
 const TimeFormat = "2006-01-02T15:04:05"
+
 // Parses a timestamp of the format 2011-05-25T12:50:49 (as returned by picasa) into a time.Time object.
 func ParseTimestamp(timestamp string) (d time.Time, err error) {
 	d, err = time.Parse(TimeFormat, timestamp)
 	return
-// 	// Splits into time and date parts
-// 	var dateTime = strings.Split(timestamp, "T")
-// 	// Splits off the timezone
-// 	//var timeZone = strings.Split(dateTime[1], "Z", -1)
-// 	
-// 	// Parse the date
-// 	var date = strings.Split(dateTime[0], "-")
-// 	d.Year, _ = strconv.ParseInt(date[0], 10, 64)
-// 	d.Month, _ = strconv.Atoi(date[1])
-// 	d.Day, _ = strconv.Atoi(date[2])
-// 
-// 	// Parse the time
-// 	var time = strings.Split(dateTime[1], ":")
-// 	d.Hour, _ = strconv.Atoi(time[0])
-// 	d.Minute, _ = strconv.Atoi(time[1])
-// 	d.Second, _ = strconv.Atoi(time[2])
+	// 	// Splits into time and date parts
+	// 	var dateTime = strings.Split(timestamp, "T")
+	// 	// Splits off the timezone
+	// 	//var timeZone = strings.Split(dateTime[1], "Z", -1)
+	// 	
+	// 	// Parse the date
+	// 	var date = strings.Split(dateTime[0], "-")
+	// 	d.Year, _ = strconv.ParseInt(date[0], 10, 64)
+	// 	d.Month, _ = strconv.Atoi(date[1])
+	// 	d.Day, _ = strconv.Atoi(date[2])
+	// 
+	// 	// Parse the time
+	// 	var time = strings.Split(dateTime[1], ":")
+	// 	d.Hour, _ = strconv.Atoi(time[0])
+	// 	d.Minute, _ = strconv.Atoi(time[1])
+	// 	d.Second, _ = strconv.Atoi(time[2])
 }
 
 // HTTP utility functions that really don't belong in this module, but are here until some other module needs them or someone moves them..

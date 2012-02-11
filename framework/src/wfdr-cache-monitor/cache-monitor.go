@@ -8,11 +8,11 @@ Please note that one instance is run for each folder that needs monitoring (e.g.
 package main
 
 import (
+	"exp/inotify"
 	"flag"
 	"fmt"
 	"log"
 	"os"
-	"exp/inotify"
 	"os/signal"
 	"path/filepath"
 	"strings"
@@ -67,7 +67,7 @@ func main() {
 		}
 	}
 
-	filepath.Walk(sourceDir, filepath.WalkFunc(func (pat string, fi os.FileInfo, err error) error {return v.Visit(pat, fi, err)}))
+	filepath.Walk(sourceDir, filepath.WalkFunc(func(pat string, fi os.FileInfo, err error) error { return v.Visit(pat, fi, err) }))
 
 	if v.deamon {
 		v.InotifyLoop()

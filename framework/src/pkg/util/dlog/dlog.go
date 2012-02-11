@@ -3,9 +3,9 @@
 package dlog
 
 import (
-	"os"
 	"fmt"
 	"log"
+	"os"
 )
 
 var dlog = log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile)

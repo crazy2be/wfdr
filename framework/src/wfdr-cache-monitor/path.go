@@ -24,10 +24,10 @@ func CalcPath(root, subfolder, fullpath string) (p *Path) {
 	root = path.Clean(root)
 	fullpath = path.Clean(fullpath)
 	subfolder = path.Clean(subfolder)
-	
+
 	p.root = root
 	p.subfolder = subfolder
-	
+
 	// Nothing to calculate
 	if len(fullpath) <= len(root) {
 		return
@@ -37,34 +37,34 @@ func CalcPath(root, subfolder, fullpath string) (p *Path) {
 		secondPart = secondPart[1:]
 	}
 	secondSlash := strings.Index(secondPart, "/")
-	
+
 	// No more /s, nothing to do.
 	if secondSlash == -1 {
 		p.layout = secondPart
 		return
 	}
-	
+
 	p.layout = secondPart[:secondSlash]
-	
+
 	thirdPart := secondPart[secondSlash+1:]
-	
+
 	fourthPart := thirdPart
-	
+
 	if IsSubPath(thirdPart, subfolder) {
 		fourthPart = thirdPart[len(subfolder)+1:]
 	}
-	
+
 	lastSlash := strings.LastIndex(fourthPart, "/")
-	
+
 	if lastSlash == -1 {
 		p.extra = "."
-							p.file = fourthPart
-							return
+		p.file = fourthPart
+		return
 	}
-	
-	p.file  = fourthPart[lastSlash+1:]
+
+	p.file = fourthPart[lastSlash+1:]
 	p.extra = fourthPart[:lastSlash]
-	
+
 	return
 }
 
