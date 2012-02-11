@@ -71,8 +71,7 @@ func ParseTimestamp(timestamp string) (d time.Time, err error) {
 
 func NewRequest(surl, authToken, method string) (req *http.Request) {
 	req = new(http.Request)
-	req.URL.Raw = surl
-	req.URL, _ = url.Parse(req.URL.Raw)
+	req.URL, _ = url.Parse(surl)
 	req.Method = method
 	req.Header = make(map[string][]string)
 	// Set the authorization header with the token (required for picasa authentication).

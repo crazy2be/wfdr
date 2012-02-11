@@ -8,7 +8,7 @@ import (
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	"os"
-	"os/signal"
+	"exp/signal"
 	"path"
 	// Local imports
 	"github.com/crazy2be/osutil"

@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
+	"exp/signal"
 	"path/filepath"
 	"strings"
 	// Local imports

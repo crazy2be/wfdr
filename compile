@@ -113,15 +113,19 @@ parser.AddFlag('clean', help="Rather than building, clean all files from the bui
 args = parser.Parse()
 
 # First, install everything required
-step("Installing framework...")
 
-cmd = "go install"
 if args['update']:
-	cmd += " -u"
-if args['clean']:
-	cmd += ' -clean'
-if run(cmd + " all", "Failed to goinstall package!"):
-	sys.exit(1)
+	step("Updating framework...")
+	if run("go get -u all", "Failed to update framework!"):
+		sys.exit(1)
+elif args['clean']:
+	step("Cleaning framework...")
+	if run("go clean -i all", "Failed to clean framework!"):
+		sys.exit(1)
+else:
+	step("Installing framework...")
+	if run("go install all", "Failed to goinstall package!"):
+		sys.exit(1)
 
 #os.chdir('framework/src')
 

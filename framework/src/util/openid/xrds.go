@@ -24,7 +24,7 @@ type XRDS struct {
 
 func (o *OpenID) ParseXRDS(r io.Reader) {
 	XRDS := new(XRDS)
-	err := xml.Unmarshal(r, XRDS)
+	err := xml.NewDecoder(r).Decode(XRDS)
 	if err != nil {
 		fmt.Printf(err.Error())
 		return

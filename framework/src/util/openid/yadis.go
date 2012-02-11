@@ -11,7 +11,7 @@ import (
 )
 
 func searchHTMLMeta(r io.Reader) (string, error) {
-	parser := xml.NewParser(r)
+	parser := xml.NewDecoder(r)
 	var token xml.Token
 	var err error
 	for {
