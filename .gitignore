@@ -10,7 +10,7 @@ framework/src/*/*
 !*.h
 !*.go
 !Makefile
-!framework/src/pkg/*
+!framework/src/util/*
 !framework/src/automatic-builds/*
 !framework/src/bug-testcases/*
 framework/src/automatic-builds/*~

@@ -54,7 +54,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	rwc := pipes.NewPipeReadWriteCloser(infile, outfile)
+	rwc := &pipes.PipeReadWriteCloser{infile, outfile}
 	//dlog.Println("Made ReadWriteCloser")
 
 	go monitorPipe(rwc)
@@ -105,7 +105,7 @@ func (m *ModuleSrv) Stop(name *string, ret *int) error {
 func (m *ModuleSrv) Status(name *string, running *bool) error {
 	//var isrunning bool
 	//*running = isrunning
-	dlog.Println(modules)
+	//dlog.Println(modules)
 	mod, err := GetModule(*name)
 	if err != nil {
 		*running = false

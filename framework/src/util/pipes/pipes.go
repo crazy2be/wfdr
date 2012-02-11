@@ -2,27 +2,23 @@
 package pipes
 
 import (
+	"syscall"
 	"errors"
 	"fmt"
 	"os"
-	"time"
 	// Local imports
 	"github.com/crazy2be/osutil"
 )
 
 type PipeReadWriteCloser struct {
-	infile  *os.File
-	outfile *os.File
-}
-
-func NewPipeReadWriteCloser(infile, outfile *os.File) *PipeReadWriteCloser {
-	return &PipeReadWriteCloser{infile, outfile}
+	Input  *os.File
+	Output *os.File
 }
 
 // Creates the pipe if it does not exist, and then opens it using OpenPipe().
 func MakeAndOpen(pipename string) (*os.File, error) {
 	if !osutil.FileExists(pipename) {
-		Mkfifo(pipename, 0644)
+		syscall.Mkfifo(pipename, 0644)
 	}
 	return Open(pipename)
 }
@@ -38,43 +34,31 @@ func Open(pipename string) (*os.File, error) {
 		return nil, errors.New(fmt.Sprint("Specified pipe file ", pipename, " is not a named pipe type file! Remove it to have a pipe file created in it's place."))
 	}
 
-	file, err := os.OpenFile(pipename, os.O_RDWR|os.O_NONBLOCK, 0644)
+	file, err := os.OpenFile(pipename, os.O_RDWR, 0644)
 	if err != nil {
 		return nil, errors.New(fmt.Sprint("Error opening pipe ", pipename, ": ", err))
 	}
 	return file, nil
 }
 
-// Implements a semi-blocking interface to the non-blocking underlying pipe (assuming the pipe was opened with CheckPipe())
-// BUG: Slower than a normal read, because it Sleep()s in a loop polling for data. 
+// Read reads from the input pipe, and is effectively equivelent to reading from prwc.Input directly.
 func (prwc *PipeReadWriteCloser) Read(buf []byte) (int, error) {
-	n, err := prwc.infile.Read(buf)
-	for n == 0 {
-		n, err = prwc.infile.Read(buf)
-		time.Sleep(1000 * 1000 * 10) //  1/100th of a second, prevents it from using 100% of the CPU.
-	}
-	return n, err
+	return prwc.Input.Read(buf)
 }
 
 func (prwc *PipeReadWriteCloser) Write(buf []byte) (int, error) {
-	return prwc.outfile.Write(buf)
+	return prwc.Output.Write(buf)
 }
 
+// Close closes both the input and the output pipes used by the prwc, returning an error if either operation fails.
 func (prwc *PipeReadWriteCloser) Close() error {
-	err := prwc.infile.Close()
+	err := prwc.Input.Close()
 	if err != nil {
 		return err
 	}
-	err = prwc.outfile.Close()
+	err = prwc.Output.Close()
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// TODO: Use syscall.Mkfifo, but it doesn't seem to work atm.
-// NOTE: perms are ignored, since this calls the mkfifo program to do it's work.
-// WARNING: Hackish implementation.
-func Mkfifo(name string, perms uint32) {
-	osutil.WaitRun("mkfifo", []string{name})
 }

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"strings"
+	//"strings"
 	// Local imports
 	//"util/osutil"
 	"util/moduled"
@@ -45,8 +45,8 @@ func StartModule(name string) error {
 	if err != nil {
 		log.Fatal(err.Error() + ". In all likelyhood, wfdr-deamon is not running. Start it and this error should go away! It's also possible that you don't have permission to talk to the deamon process, in which case i can't help you.")
 	}
-	var dummy *int
-	err = client.Call("ModuleSrv.Start", &name, dummy)
+	var dummy int = 1000
+	err = client.Call("ModuleSrv.Start", &name, &dummy)
 	if err != nil {
 		handleError(err, "starting", name)
 	}
@@ -58,8 +58,8 @@ func StopModule(name string) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var dummy *int
-	err = client.Call("ModuleSrv.Stop", &name, dummy)
+	var dummy int = 1000
+	err = client.Call("ModuleSrv.Stop", &name, &dummy)
 	if err != nil {
 		handleError(err, "stopping", name)
 	}
@@ -67,10 +67,10 @@ func StopModule(name string) error {
 }
 
 func handleError(err error, verb, name string) {
-	// WARNING: HACK HACK HACK
-	if strings.Index(err.Error(), "Unmarshal") != -1 {
-		return
-	}
+// 	// WARNING: HACK HACK HACK
+// 	if strings.Index(err.Error(), "Unmarshal") != -1 {
+// 		return
+// 	}
 	fmt.Println("Error "+verb+" module", name, ":", err)
 
 }
