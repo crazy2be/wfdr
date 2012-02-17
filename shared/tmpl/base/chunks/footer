@@ -1,6 +1,0 @@
-<div id="footer">
-  <div id="footer-inner">
-    <p>Your use of this website indicates your acceptance of its <a href="/pages/tos">terms of service</a>. Copyright © <a href="/pages/contact">WFDR Team</a>, 2010. Icons from Humanity icon set unless otherwise noted.</p>
-    <p class="attribution">Powered by Python 2.7, bash, Go, GCC, Git, Ubuntu, jQuery, OpenID and more.</p>
-  </div>
-</div>
