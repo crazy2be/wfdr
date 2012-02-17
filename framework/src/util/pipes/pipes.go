@@ -52,13 +52,14 @@ func (prwc *PipeReadWriteCloser) Write(buf []byte) (int, error) {
 
 // Close closes both the input and the output pipes used by the prwc, returning an error if either operation fails.
 func (prwc *PipeReadWriteCloser) Close() error {
-	err := prwc.Input.Close()
-	if err != nil {
-		return err
+	err1 := prwc.Input.Close()
+	err2 := prwc.Output.Close()
+	// Should attempt to close both pipes before returning any error.
+	if err1 != nil {
+		return err1
 	}
-	err = prwc.Output.Close()
-	if err != nil {
-		return err
+	if err2 != nil {
+		return err2
 	}
 	return nil
 }
