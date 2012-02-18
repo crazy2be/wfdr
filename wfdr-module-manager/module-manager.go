@@ -7,8 +7,8 @@ import (
 	"log"
 	//"strings"
 	// Local imports
-	//"util/osutil"
-	"util/moduled"
+	//"wfdr/osutil"
+	"wfdr/moduled"
 )
 
 func main() {

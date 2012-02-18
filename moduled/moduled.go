@@ -5,7 +5,7 @@ import (
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	// Local imports
-	"util/pipes"
+	"wfdr/pipes"
 )
 
 // Connects to the pipe files, in order to allow this program to sent commands to the process management deamon.

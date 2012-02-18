@@ -12,8 +12,8 @@ import (
 	"path"
 	// Local imports
 	"github.com/crazy2be/osutil"
-	"util/dlog"
-	"util/pipes"
+	"wfdr/dlog"
+	"wfdr/pipes"
 )
 
 func main() {

@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 	// Local imports
-	//"util/paths"
+	//"wfdr/paths"
 )
 
 type modifiedHandler struct {

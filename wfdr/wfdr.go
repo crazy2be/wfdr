@@ -9,7 +9,7 @@ import (
 	"os"
 	"os/exec"
 	// Local imports
-	"util/moduled"
+	"wfdr/moduled"
 )
 
 func main() {

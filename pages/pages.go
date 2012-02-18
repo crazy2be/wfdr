@@ -10,8 +10,8 @@ import (
 	"path"
 	"strings"
 	// Local imports
-	"util/dlog"
-	tmpl "util/template"
+	"wfdr/dlog"
+	tmpl "wfdr/template"
 )
 
 const (

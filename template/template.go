@@ -16,8 +16,8 @@ import (
 	// Local packages.
 	"github.com/crazy2be/browser"
 	"github.com/crazy2be/perms"
-	dlog "util/dlog"
-	"util/fnotify"
+	dlog "wfdr/dlog"
+	"wfdr/fnotify"
 )
 
 // A simple struct that should be passed to each page when you render it. Templates can rely on all the information here being available on all templates (or, at least, the ones rendered by go). Some of these will be set by the library automatically, but can be overridden in custom code if needed.
