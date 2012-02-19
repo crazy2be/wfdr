@@ -16,12 +16,10 @@ func RPCConnect() (*rpc.Client, error) {
 
 	infile, err := pipes.Open(inpipe)
 	if err != nil {
-		//fmt.Println(err)
 		return nil, err
 	}
 	outfile, err := pipes.Open(outpipe)
 	if err != nil {
-		//fmt.Println(err)
 		return nil, err
 	}
 
