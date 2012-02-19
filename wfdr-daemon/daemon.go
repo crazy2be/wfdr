@@ -106,8 +106,9 @@ func (m *ModuleSrv) Stop(name *string, ret *int) error {
 func (m *ModuleSrv) Status(name *string, running *bool) error {
 	mod, err := GetModule(*name)
 	if err != nil {
-		//*running = false
-		return err
+		*running = false
+		return nil
+		//return err
 	}
 	dlog.Println("Module was running last we checked...")
 	*running = mod.IsRunning()
