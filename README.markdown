@@ -1,6 +1,8 @@
 WFDR Framework - Beta Release
 =============================
 
+**New 18/Feb/2012**: Updated for go 1.0, new directory layout to take advantage of the go build tool.
+
 Background
 ----------
 There's a million different web frameworks out there, each for a different language. Ruby has rails, java has grails, python has django. However, although each of these frameworks has many merits, they are designed for a single language, and none of them work with go. Regardless, I had a website to write, and go's strengths in that area lead me to chose it as my language of choice. The framework has evolved along with the website, and has been in development for almost a year now. Although the initial builds were not really a framework at all, in the past few months it has evolved to become quite viable for others to use. As a result, I am publishing the source in the hope that others many find it useful, perhaps giving me some constructive feedback and criticism along the way. Expect a few rough edges.
