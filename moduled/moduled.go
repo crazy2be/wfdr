@@ -25,7 +25,7 @@ func RPCConnect() (*rpc.Client, error) {
 		return nil, err
 	}
 
-	rwc := &pipes.PipeReadWriteCloser{infile, outfile}
+	rwc := &pipes.PipeReadWriteCloser{Input: infile, Output: outfile}
 
 	return jsonrpc.NewClient(rwc), nil
 }

@@ -23,7 +23,7 @@ func main() {
 		module = os.Args[2]
 		//log.Fatal("Module name not provided...")
 	}
-
+	
 	if module == "all" {
 		fis, err := ioutil.ReadDir("modules")
 		if err != nil {
@@ -34,7 +34,7 @@ func main() {
 		}
 		return
 	}
-
+	
 	// Multiple module names specified
 	if len(os.Args) > 3 {
 		for i := 2; i < len(os.Args); i++ {
@@ -42,15 +42,15 @@ func main() {
 		}
 		return
 	}
-
+	
 	moduleAction(module, action)
 }
 
 func printHelp() {
 	fmt.Println("Usage: wfdr <action> [<modulename>]...")
-	fmt.Println("	Action can be one of stop, start, restart, compile, recompile, status, or list.")
-	fmt.Println("	(status is not implemented)")
-	fmt.Println("	modulename can be the name of any installed module, or 'all' to take an action on all modules. Multiple names can be specified, seperated by spaces. (e.g. wfdr start auth base main)")
+	fmt.Println(" Action can be one of stop, start, restart, compile, recompile, status, or list.")
+	fmt.Println(" (status is not implemented)")
+	fmt.Println(" modulename can be the name of any installed module, or 'all' to take an action on all modules. Multiple names can be specified, seperated by spaces. (e.g. wfdr start auth base main)")
 }
 
 func mustRun(name string, args ...string) {
@@ -72,44 +72,44 @@ func moduleAction(module, action string) {
 	var err error
 	os.Setenv("PATH", os.Getenv("PATH")+":framework/sh:framework/bin")
 	switch action {
-	case "stop", "start", "restart":
-		mustRun("wfdr-module-manager", "-action="+action, "-modulename="+module)
-	case "compile":
-		mustRun("wfdr-compile", module)
-	case "recompile":
-		mustRun("wfdr-compile", module, "-recompile")
-	case "status":
-		fmt.Println("Not implemented!")
-	case "list":
-		fis, err := ioutil.ReadDir("modules")
-		if err != nil {
-			log.Fatal("Error opening modules directory, cannot list modules.")
-		}
-		client, err := moduled.RPCConnect()
-		if err != nil {
-			log.Fatal(err)
-		}
-		for _, fi := range fis {
-			name := fi.Name()
-			var running bool
-			err = client.Call("ModuleSrv.Status", &name, &running)
+		case "stop", "start", "restart":
+			mustRun("wfdr-module-manager", "-action="+action, "-modulename="+module)
+		case "compile":
+			mustRun("wfdr-compile", module)
+		case "recompile":
+			mustRun("wfdr-compile", module, "-recompile")
+		case "status":
+			fmt.Println("Not implemented!")
+		case "list":
+			fis, err := ioutil.ReadDir("modules")
+			if err != nil {
+				log.Fatal("Error opening modules directory, cannot list modules.")
+			}
+			client, err := moduled.RPCConnect()
 			if err != nil {
 				log.Fatal(err)
 			}
-			if running {
-				fmt.Printf(" * %s\n", name)
-			} else {
-				fmt.Printf("   %s\n", name)
+			for _, fi := range fis {
+				name := fi.Name()
+				var running bool
+				err = client.Call("ModuleSrv.Status", &name, &running)
+				if err != nil {
+					log.Fatal(err)
+				}
+				if running {
+					fmt.Printf(" * %s\n", name)
+				} else {
+					fmt.Printf("   %s\n", name)
+				}
 			}
-		}
-		err = client.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	default:
-		log.Fatal("Unrecognized command ", action)
-		printHelp()
-		os.Exit(1)
+			err = client.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		default:
+			log.Fatal("Unrecognized command ", action)
+			printHelp()
+			os.Exit(1)
 	}
 	if err != nil {
 		log.Fatal(err)

@@ -54,7 +54,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	rwc := &pipes.PipeReadWriteCloser{infile, outfile}
+	rwc := &pipes.PipeReadWriteCloser{Input: infile, Output: outfile}
 	//dlog.Println("Made ReadWriteCloser")
 
 	go monitorPipe(rwc)
@@ -90,6 +90,7 @@ type ModuleSrv int
 // Starts the module. ret is never changed.
 func (m *ModuleSrv) Start(name *string, ret *int) error {
 	dlog.Println("Starting module:", *name)
+	log.Println("Starting module:", *name)
 	*ret = 12390
 	_, err := StartModule(*name)
 	return err

@@ -122,7 +122,11 @@ func StartModule(name string) (*Module, error) {
 	cwd, _ := os.Getwd()
 	jaildir := path.Join(cwd, "jails/"+name)
 	moddir := path.Join(cwd, "modules/"+name)
-	JailInit(moddir, jaildir, name)
+	
+	err := JailInit(moddir, jaildir, name)
+	if err != nil {
+		return nil, err
+	}
 
 	path := jaildir + "/sh:" + jaildir + "/bin:" + os.Getenv("PATH")
 
