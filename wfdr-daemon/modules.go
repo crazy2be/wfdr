@@ -6,10 +6,9 @@ import (
 	"log"
 	"os"
 	"path"
-	"syscall"
+	"time"
 	// Local imports
 	"github.com/crazy2be/osutil"
-	"wfdr/dlog"
 )
 
 type Module struct {
@@ -38,23 +37,87 @@ func ModuleRunning(name string) bool {
 	return module.IsRunning()
 }
 
+func exitWait(pid int, done chan <-error) {
+	for {
+		waitmsg, err := os.Wait(pid, os.WUNTRACED)
+		if err != nil {
+			done <- err
+			return
+		}
+		if waitmsg.WaitStatus.Exited() {
+			done <- nil
+			return
+		}
+	}
+}
+
+// Waits for a process with the given PID to exit.
+func ExitWait(pid int) error {
+	done := make(chan error)
+	go exitWait(pid, done)
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(15 * time.Second):
+		return errors.New(fmt.Sprintf("Timed out waiting for process with PID %d to exit. You might want to clean it up manually.", pid))
+	}
+	panic("Not reached!")
+}
+
 func (m *Module) Stop() error {
+	log.Printf("Stopping module %s", m.Name)
+	if m.Name == "internal:shared" {
+		err := m.SyncProcess.Signal(os.UnixSignal(0x02))
+		if err != nil {
+			return err
+		}
+		err = ExitWait(m.SyncProcess.Pid)
+		if err != nil {
+			return err
+		}
+		delete(modules, m.Name)
+		return nil
+	}
 	// 0x02, or SIGINT.
-	syscall.Kill(m.MainProcess.Pid, 0x02)
-	syscall.Kill(m.SyncProcess.Pid, 0x02)
-	// TODO: Check for syscall errors
+	err1 := m.MainProcess.Signal(os.UnixSignal(0x02))
+	err2 := m.SyncProcess.Signal(os.UnixSignal(0x02))
+	if err1 != nil {
+		return errors.New(fmt.Sprintf("Failed to stop module %s:", m.Name, err1))
+	}
+	if err2 != nil {
+		return errors.New(fmt.Sprintf("Failed to stop sync process for module %s (PID %d), you should probably stop it manually.", m.Name, m.SyncProcess.Pid))
+	}
+	
+	err1 = ExitWait(m.MainProcess.Pid)
+	if err1 != nil {
+		return err1
+	}
+	
+	err2 = ExitWait(m.SyncProcess.Pid)
+	if err2 != nil {
+		return err2
+	}
+	
 	delete(modules, m.Name)
 	return nil
 }
 
 func (m *Module) IsRunning() bool {
-	//dlog.Printf("%#v %#v %#v\n", m, m.MainProcess, m.SyncProcess)
-	waitmsg, err := os.Wait(m.MainProcess.Pid, os.WNOHANG|os.WUNTRACED)
-	if err != nil {
-		// TODO: When would this happen?
-		dlog.Println("Unable to get process wait status:", err)
+	pid := 0
+	if m.Name == "internal:shared" {
+		pid = m.SyncProcess.Pid
+	} else {
+		pid = m.MainProcess.Pid
 	}
-	//dlog.Printf("%#v\n", waitmsg)
+	
+	waitmsg, err := os.Wait(pid, os.WNOHANG|os.WUNTRACED)
+	if err != nil {
+		// When would this happen?
+		log.Println("Unable to get process wait status:", err)
+		// Assume it is not running
+		return false
+	}
+	
 	// If status is not available, the pid is 0.
 	if waitmsg.Pid == 0 {
 		return true
@@ -91,19 +154,24 @@ func StartSharedSync() (*Module, error) {
 	if ModuleRunning(name) {
 		return GetModule(name)
 	}
+	
+	log.Printf("Syncing shared resources...")
 	var err error
 	_, err = osutil.WaitRun("shared-init", nil)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Done syncing shared resources.")
+	
 	mod := new(Module)
 	mod.Name = name
+	
 	cmd, err := osutil.Run("shared-daemon", nil)
 	if err != nil {
 		return nil, err
 	}
+	
 	mod.SyncProcess = cmd.Process
-	mod.MainProcess = cmd.Process
 	modules[name] = mod
 	return mod, nil
 }

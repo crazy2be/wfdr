@@ -55,7 +55,6 @@ func main() {
 	}
 
 	rwc := &pipes.PipeReadWriteCloser{Input: infile, Output: outfile}
-	//dlog.Println("Made ReadWriteCloser")
 
 	go monitorPipe(rwc)
 
@@ -67,7 +66,7 @@ func main() {
 			Exit(0)
 		// SIGCHLD
 		case 0x11:
-		// Do nothing
+			// Do nothing
 		default:
 			dlog.Println(sig)
 			break
@@ -77,7 +76,10 @@ func main() {
 
 func Exit(status int) {
 	for _, module := range modules {
-		module.Stop()
+		err := module.Stop()
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	os.Remove("cache/wfdr-deamon-pipe-in")
 	os.Remove("cache/wfdr-deamon-pipe-out")
@@ -89,7 +91,6 @@ type ModuleSrv int
 
 // Starts the module. ret is never changed.
 func (m *ModuleSrv) Start(name *string, ret *int) error {
-	dlog.Println("Starting module:", *name)
 	log.Println("Starting module:", *name)
 	*ret = 12390
 	_, err := StartModule(*name)
@@ -97,7 +98,7 @@ func (m *ModuleSrv) Start(name *string, ret *int) error {
 }
 
 func (m *ModuleSrv) Stop(name *string, ret *int) error {
-	dlog.Println("Stopping module:", *name)
+	log.Println("Stopping module:", *name)
 	*ret = 12048
 	err := StopModule(*name)
 	return err
@@ -110,25 +111,23 @@ func (m *ModuleSrv) Status(name *string, running *bool) error {
 		return nil
 		//return err
 	}
-	dlog.Println("Module was running last we checked...")
+	log.Println("Module was running last we checked...")
 	*running = mod.IsRunning()
 	if *running {
-		dlog.Println("Module appears to be running!")
+		log.Println("Module appears to be running!")
 	}
 	return nil
 }
 
 func monitorPipe(rwc io.ReadWriteCloser) {
-
 	StartSharedSync()
 
 	serv := rpc.NewServer()
 	codec := jsonrpc.NewServerCodec(rwc)
-	//dlog.Println("Made RPC server")
+	
 	m := new(ModuleSrv)
 	serv.Register(m)
-	//dlog.Println("Registered module service")
-	dlog.Println("RPC server is started and awaiting commands!")
+	
+	log.Println("RPC server is started and awaiting commands!")
 	serv.ServeCodec(codec)
-	//dlog.Println("Serving on connection rwc")
 }

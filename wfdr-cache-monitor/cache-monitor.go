@@ -24,6 +24,8 @@ var dlog *log.Logger
 
 func main() {
 	sourceDir, destDir, destSubfolder, fileType, mode := "", "", "", "", ""
+	
+	log.SetPrefix(fmt.Sprintf("cache-monitor (PID %d) ", os.Getpid()))
 
 	var debug bool
 
@@ -67,6 +69,10 @@ func main() {
 		}
 	}
 
+	if !osutil.FileExists(sourceDir) {
+		dlog.Printf("Warning: Given source directory of %s does not exist, exiting...", sourceDir)
+		os.Exit(0)
+	}
 	filepath.Walk(sourceDir, filepath.WalkFunc(func(pat string, fi os.FileInfo, err error) error { return v.Visit(pat, fi, err) }))
 
 	if v.deamon {
@@ -97,7 +103,10 @@ func (v *Visitor) InotifyLoop() {
 			switch sig.(os.UnixSignal) {
 			// SIGINT, SIGKILL, SIGTERM
 			case 0x02, 0x09, 0xf:
-				v.watcher.Close()
+				err := v.watcher.Close()
+				if err != nil {
+					log.Println("Warning: Error closing watcher:", err)
+				}
 				os.Exit(0)
 			// SIGCHLD
 			case 0x11:
