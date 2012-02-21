@@ -4,20 +4,20 @@ package template
 // TODO: Add caching in production configuration, or in both if you can hook in with inotify to automatically update the cache when a file is updated. Look at os/inoify.
 
 import (
-	"errors"
-	"fmt"
-
 	"encoding/json"
-	"io"
-	"log"
 	"net/http"
 	"strings"
+	"errors"
 	"time"
-	// Local packages.
-	"github.com/crazy2be/browser"
-	"github.com/crazy2be/perms"
-	dlog "wfdr/dlog"
+	"log"
+	"fmt"
+	"io"
+
+	"wfdr/perms"
+	"wfdr/dlog"
 	"wfdr/fnotify"
+
+	"github.com/crazy2be/browser"
 )
 
 // A simple struct that should be passed to each page when you render it. Templates can rely on all the information here being available on all templates (or, at least, the ones rendered by go). Some of these will be set by the library automatically, but can be overridden in custom code if needed.
