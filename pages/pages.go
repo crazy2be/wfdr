@@ -1,16 +1,14 @@
 package pages
 
 import (
-	"bytes"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
-	"path"
 	"strings"
-	// Local imports
-	"wfdr/dlog"
+	"bytes"
+	"path"
+	"log"
+	"os"
+
 	tmpl "wfdr/template"
 )
 
@@ -46,17 +44,13 @@ func LoadPage(name string) (p *PageData, e error) {
 	titleb, e := ioutil.ReadFile(TITLE_DIRECTORY + name)
 	title := string(titleb)
 	if e != nil {
-		fmt.Println("Oops, could not load title for page", name, ". Error:", e)
+		log.Println("Oops, could not load title for page", name, ". Error:", e)
 		title = "[No Title]"
 	}
 
-	// TODO: 404 error if page is not loaded
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		log.Println(err)
-	}
-	tmpl.Render(&page, req, string(title), "data/page/"+name, nil)
-	log.Println(&page)
+	inf := &tmpl.PageInfo{Title: title, Name: "data/page/"+name}
+	tmpl.Execute(&page, inf)
+	
 	p.Content = page.Bytes()
 	p.Title = title
 	p.Name = name
@@ -65,7 +59,7 @@ func LoadPage(name string) (p *PageData, e error) {
 
 // Saves the page to a file in data/tmpl/base/page, with the title in data/pages/title.
 func (p *PageData) Save() (e error) {
-	fmt.Println(p.Content, p.Title, p.Name)
+	log.Println(p.Content, p.Title, p.Name)
 
 	nameDir, _ := path.Split(p.Name)
 
@@ -119,7 +113,7 @@ func GetPageList() (pages []Page) {
 		page.Name = pagename
 		title, err := ioutil.ReadFile(TITLE_DIRECTORY + pagename)
 		if err != nil {
-			dlog.Println(err)
+			log.Println("Error getting page list:", err)
 			continue
 		}
 		page.Title = string(title)
@@ -131,13 +125,13 @@ func GetPageList() (pages []Page) {
 func getPageListInDirectory(dir string) (pages []string) {
 	pagesFolder, err := os.Open(TITLE_DIRECTORY + dir)
 	if err != nil {
-		dlog.Println(err)
+		log.Println(err)
 		return
 	}
 
 	pagesinfo, err := pagesFolder.Readdir(-1)
 	if err != nil {
-		dlog.Println(err)
+		log.Println(err)
 		return
 	}
 

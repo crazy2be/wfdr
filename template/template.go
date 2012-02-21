@@ -42,13 +42,12 @@ func SetModuleName(modName string) {
 }
 
 // Renders a set of data provided by the module into the format specified by the request. Normally, this means that the data is rendered into HTML (mobile vs. desktop is automatically selected), but we may add support for ?alt=json or such at a later point
-func Render(c io.Writer, r *http.Request, title, name string, data interface{}) {
+func Render(c http.ResponseWriter, r *http.Request, title, name string, data interface{}) {
 	if WouldUseJson(r) {
 		enc := json.NewEncoder(c)
 		err := enc.Encode(data)
 		if err != nil {
-			dlog.Println(err)
-			fmt.Fprintln(c, err)
+			Error500(c, r, err)
 		}
 		return
 	}
@@ -63,14 +62,19 @@ func Render(c io.Writer, r *http.Request, title, name string, data interface{}) 
 	// Removed the modulename because it's not needed in the new framework. However, this will break things in the old framework. *sigh*...
 	p.Name = /*moduleName + "/" + */ name
 	p.Request = r
-	perms, _ := perms.Get(r)
+	perms, err := perms.Get(r)
+	if err != nil {
+		log.Printf("Warning: Error getting page permissions for %s: %s", r.URL, err)
+	}
 	p.Perms = perms
 	p.Object = data
 
-	dlog.Println(p)
-
-	// TODO: Remove Execute() function and do this here.
-	Execute(c, &p)
+	err = Execute(c, &p)
+	if err != nil {
+		c.WriteHeader(500)
+		fmt.Fprintln(c, "FATAL ERROR:", err)
+		return
+	}
 }
 
 // Generic function for 404 errors.
@@ -80,6 +84,7 @@ func Error404(c http.ResponseWriter, r *http.Request, data interface{}) {
 }
 
 func Error500(c http.ResponseWriter, r *http.Request, data interface{}) {
+	log.Println("Warning: 500 Interal Server Error:", data)
 	c.WriteHeader(500)
 	Render(c, r, "500 - Internal Error", "shared/errors/500", data)
 }
@@ -102,37 +107,32 @@ func WouldUseJson(r *http.Request) bool {
 
 // Takes an io.Writer and a stuct of PageInfo, rendering the template specified by the PageInfo struct onto the io.Writer. Automatically selects mobile vs desktop templates, and returns an error if anything goes wrong. If you want more control, too bad until someone adds it in.
 // NOTE: This function is depricated! Use Render() instead!
-func Execute(wr io.Writer, data *PageInfo) (e error) {
+func Execute(wr io.Writer, data *PageInfo) (err error) {
 	if len(data.Name) < 1 {
-		e = errors.New("PageInfo template name not specified!")
+		err = errors.New("PageInfo template name not specified!")
 		return
 	}
 
 	data.ModuleName = make(map[string]bool, 1)
 	data.ModuleName[moduleName] = true
 
-	dlog.Println("ModuleName:", moduleName, "Map:", data.ModuleName)
+	log.Println("ModuleName:", moduleName, "Map:", data.ModuleName)
 
 	prefix := "tmpl/desktop/"
 	if WouldUseMobile(data.Request) {
 		prefix = "tmpl/mobile/"
 	}
 
-	// TODO: Should add caching here in production configuration.
 	startTime := time.Now()
-
-	//templates[prefix+data.Name], e = ParseFile(prefix+data.Name)
 	template, err := GetTemplate(prefix + data.Name)
-
 	endTime := time.Now()
+	
 	deltaTime := endTime.Sub(startTime)
 	fmt.Println("Took", float32(deltaTime)/(1000.0*1000.0*1000.0), "seconds to parse template", data.Name)
 
-	//template := templates[prefix+data.Name]
-
 	if err != nil {
-		fmt.Println("Error parsing template '", data.Name, "':", err)
-		return
+		log.Println("Error parsing template '", data.Name, "':", err)
+		return err
 	}
 
 	startTime = time.Now()
@@ -141,7 +141,7 @@ func Execute(wr io.Writer, data *PageInfo) (e error) {
 
 	endTime = time.Now()
 	deltaTime = endTime.Sub(startTime)
-	fmt.Println("Took", float32(deltaTime)/(1000.0*1000.0*1000.0), "seconds to render template", data.Name)
+	log.Println("Took", float32(deltaTime)/(1000.0*1000.0*1000.0), "seconds to render template", data.Name)
 	return
 }
 
@@ -157,10 +157,10 @@ func init() {
 }
 
 func LoadTemplate(path string) error {
-	fmt.Println("Loading template:", path)
+	log.Println("Loading template:", path)
 	template, err := ParseFile(path)
 	if err != nil {
-		dlog.Println("Error parsing template", path, err)
+		log.Println("Error parsing template", path, err)
 		return err
 	}
 	templates[path] = template
@@ -168,7 +168,7 @@ func LoadTemplate(path string) error {
 }
 
 func TemplateModified(path string) {
-	dlog.Println("Reloading template:", path)
+	log.Println("Reloading template:", path)
 	LoadTemplate(path)
 }
 
@@ -181,7 +181,7 @@ func GetTemplate(path string) (*Template, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(path)
+	log.Println("Loading template", path)
 	watcher.Modified(path, TemplateModified)
 
 	return templates[path], nil

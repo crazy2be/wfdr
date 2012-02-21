@@ -26,14 +26,14 @@ Getting Started
 	git clone git://github.com/crazy2be/wfdr.git
 	go install wfdr/...
 
-If all goes well, you've now built the framework. If there is an error while compiling, please let me know by filing a bug report. The compile script should ensure everything it needs is installed.
+If all goes well, you've now built the framework. If there is an error while compiling, please let me know by filing a bug report.
 
 Now, you probably want to know how you can actually use this shiny new framework :). First, clone the example repository:
 
 	git clone git://github.com/crazy2be/wfdr-example.git
 	cd wfdr-example
 
-Now, to start the framework, open up two terminals. In both terminals, `cd $GOPATH/wfdr-example`. In the first terminal, run `wfdr-daemon`. This daemon process manages your various module processes, as well as starting some other programs to make sure that files are synced automatically when changed (uses inotify; Linux only atm). In the second terminal, you can now use the `wfdr` command to control modules by communicating with the daemon. Let's start a few of the included example modules:
+Now, to start the framework, open up two terminals. In both terminals, `cd $GOPATH/wfdr-example`. In the first terminal, run `wfdr-daemon`. This daemon process manages your various module processes, as well as starting some other programs to make sure that files are synced automatically when changed (currently Linux only). In the second terminal, you can now use the `wfdr` command to control modules by communicating with the daemon. Let's start a few of the included example modules:
 
 	wfdr start base main auth photos pages news
 
