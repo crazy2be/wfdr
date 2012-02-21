@@ -3,18 +3,14 @@ package pages
 import (
 	"io/ioutil"
 	"net/http"
-	"strings"
-	"bytes"
 	"path"
 	"log"
 	"os"
-
-	tmpl "wfdr/template"
 )
 
 const (
 	TITLE_DIRECTORY   = "data/pages/title/"
-	CONTENT_DIRECTORY = "data/tmpl/base/page/"
+	CONTENT_DIRECTORY = "data/pages/content/"
 )
 
 type PageContent []byte
@@ -29,59 +25,56 @@ type PageData struct {
 	Name    string
 }
 
-func LoadPage(name string) (p *PageData, e error) {
+func LoadPage(name string) (p *PageData, err error) {
 	p = new(PageData)
-	var page bytes.Buffer
+	p.Name = path.Clean(name)
 
-	// Prevents users from sticking ../../ etc in URLs and writing to other files.
-	// TODO: path.Clean()?
-	if strings.Index(name, ".") != -1 {
-		p.Content = PageContent([]byte("Nice try ;)."))
-		p.Title = "HAX AVOIDED"
-		return
+	titleb, err := ioutil.ReadFile(path.Join(TITLE_DIRECTORY, p.Name))
+	p.Title = string(titleb)
+	if err != nil {
+		p.Title = "Error reading page title: " + err.Error()
+		return p, err
 	}
-
-	titleb, e := ioutil.ReadFile(TITLE_DIRECTORY + name)
-	title := string(titleb)
-	if e != nil {
-		log.Println("Oops, could not load title for page", name, ". Error:", e)
-		title = "[No Title]"
-	}
-
-	inf := &tmpl.PageInfo{Title: title, Name: "data/page/"+name}
-	tmpl.Execute(&page, inf)
 	
-	p.Content = page.Bytes()
-	p.Title = title
-	p.Name = name
-	return
+	p.Content, err = ioutil.ReadFile(path.Join(CONTENT_DIRECTORY, p.Name))
+	if err != nil {
+		p.Content = []byte("Error reading page content: " + err.Error())
+		return p, err
+	}
+	return p, nil
 }
 
 // Saves the page to a file in data/tmpl/base/page, with the title in data/pages/title.
-func (p *PageData) Save() (e error) {
-	log.Println(p.Content, p.Title, p.Name)
-
+func (p *PageData) Save() error {
 	nameDir, _ := path.Split(p.Name)
 
-	os.MkdirAll(TITLE_DIRECTORY+nameDir, 0755)
-	os.MkdirAll(CONTENT_DIRECTORY+nameDir, 0755)
+	os.MkdirAll(path.Join(CONTENT_DIRECTORY, nameDir), 0755)
+	os.MkdirAll(path.Join(TITLE_DIRECTORY, nameDir), 0755)
 
-	e = ioutil.WriteFile(CONTENT_DIRECTORY+p.Name, p.Content, 0666)
-	e = ioutil.WriteFile(TITLE_DIRECTORY+p.Name, []byte(p.Title), 0666)
-	return
+	err1 := ioutil.WriteFile(path.Join(CONTENT_DIRECTORY, p.Name), p.Content, 0666)
+	err2 := ioutil.WriteFile(path.Join(TITLE_DIRECTORY, p.Name), []byte(p.Title), 0666)
+	
+	if err1 != nil {
+		return err1
+	}
+	if err2 != nil {
+		return err2
+	}
+	return nil
 }
 
 // Deletes the page (from disk!).
-func (p *PageData) Delete() (err error) {
-	err = os.Remove(TITLE_DIRECTORY + p.Name)
-	if err != nil {
-		return
+func (p *PageData) Delete() error {
+	err1 := os.Remove(path.Join(TITLE_DIRECTORY, p.Name))
+	err2 := os.Remove(path.Join(CONTENT_DIRECTORY, p.Name))
+	
+	if err1 != nil {
+		return err1
 	}
-	err = os.Remove(CONTENT_DIRECTORY + p.Name)
-	if err != nil {
-		return
+	if err2 != nil {
+		return err2
 	}
-	return
+	return nil
 }
 
 // DEPRECATED! USE PageData.Save() instead!
