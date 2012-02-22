@@ -45,28 +45,17 @@ func (this PermissionsList) Swap(i, j int) {
 	this[i], this[j] = this[j], this[i]
 }
 
-// ToEditPage returns a boolean value indicating if the currently logged in user has permission to edit the page given by httppath. If there is an error discovering this, it returns false.
+// ToEditPage returns a boolean value indicating if the currently logged in user has permission to edit the page given by httppath.
 func ToEditPage(r *http.Request, httppath string) bool {
 	r1 := *r
 	r1.URL.Path = httppath
 	
-	p, err := Get(r)
-	if err != nil {
-		return false
-	}
+	// Ignore the error; permission bits default to all false anyway so the result should still be, at worst, less permissive than it really is.
+	p, _ := Get(r)
 	if p.Write {
 		return true
 	}
 	return false
-}
-
-// DEPRECATED! Exists only for compatibility reasons. Can be removed when modules are changed to use the new function.
-func GetPerms(r *http.Request) (p *Permissions) {
-	p, err := Get(r)
-	if err != nil {
-		return nil
-	}
-	return p
 }
 
 // Basic function that retrieves the permissions a user has based on the contents of their request, including cookies and request path. Designed to be a simple function for most uses. If you want more control, you can use the GetGroupPerms and GetUserPerms functions.

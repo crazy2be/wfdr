@@ -46,8 +46,14 @@ func (fsm *FSManager) Load(name string) (*Page, error) {
 func (fsm *FSManager) Save(name string, title string, content []byte) (err error) {
 	dir, _ := path.Split(name)
 
-	os.MkdirAll(path.Join(fsm.ContentDir, dir), 0755)
-	os.MkdirAll(path.Join(fsm.TitleDir, dir), 0755)
+	err = os.MkdirAll(path.Join(fsm.ContentDir, dir), 0755)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(path.Join(fsm.TitleDir, dir), 0755)
+	if err != nil {
+		return err
+	}
 
 	err1 := ioutil.WriteFile(path.Join(fsm.ContentDir, name), content, 0666)
 	err2 := ioutil.WriteFile(path.Join(fsm.TitleDir, name), []byte(title), 0666)

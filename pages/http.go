@@ -37,7 +37,7 @@ func (ps *PageServer) Save(c http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	if oldname != name {
+	if oldname != name && oldname != "" {
 		err := ps.Manager.Delete(oldname)
 		if err != nil {
 			template.Error500(c, r, err)
@@ -78,4 +78,15 @@ func (ps *PageServer) Add(c http.ResponseWriter, r *http.Request) {
 	var page Page
 	page.Title = "[New "+ps.PageAlias+"]"
 	template.Render(c, r, "Add New "+ps.PageAlias, "edit", page)
+}
+
+func (ps *PageServer) List(c http.ResponseWriter, r *http.Request) {
+	plist, err := ps.Manager.List()
+	if err != nil {
+		template.Error500(c, r, err)
+		return
+	}
+	
+	template.Render(c, r, ps.PageAlias, "main", plist)
+	return
 }
