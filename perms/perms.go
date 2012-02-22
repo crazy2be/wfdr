@@ -15,7 +15,6 @@ import (
 	"wfdr/session"
 )
 
-// TODO: Do we want more permissions here?
 type Permissions struct {
 	Read  bool
 	Write bool
@@ -44,6 +43,21 @@ func (this PermissionsList) Less(i, j int) bool {
 }
 func (this PermissionsList) Swap(i, j int) {
 	this[i], this[j] = this[j], this[i]
+}
+
+// ToEditPage returns a boolean value indicating if the currently logged in user has permission to edit the page given by httppath. If there is an error discovering this, it returns false.
+func ToEditPage(r *http.Request, httppath string) bool {
+	r1 := *r
+	r1.URL.Path = httppath
+	
+	p, err := Get(r)
+	if err != nil {
+		return false
+	}
+	if p.Write {
+		return true
+	}
+	return false
 }
 
 // DEPRECATED! Exists only for compatibility reasons. Can be removed when modules are changed to use the new function.

@@ -77,6 +77,12 @@ func Render(c http.ResponseWriter, r *http.Request, title, name string, data int
 	}
 }
 
+// Error403 renders a generic 403 error page.
+func Error403(c http.ResponseWriter, r *http.Request, data interface{}) {
+	c.WriteHeader(403)
+	Render(c, r, "403 - Access Denied", "shared/errors/403", data)
+}
+
 // Generic function for 404 errors.
 func Error404(c http.ResponseWriter, r *http.Request, data interface{}) {
 	c.WriteHeader(404)
