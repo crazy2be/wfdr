@@ -14,7 +14,6 @@ import (
 	"io"
 
 	"wfdr/perms"
-	"wfdr/dlog"
 	"wfdr/fnotify"
 
 	"github.com/crazy2be/browser"
@@ -38,7 +37,7 @@ var templates = make(map[string]*Template)
 // Pretty much useless with the new jailing API, so don't use it anymore.
 func SetModuleName(modName string) {
 	moduleName = strings.ToUpper(modName[:1]) + modName[1:]
-	dlog.Println("Set module name to", modName)
+	log.Println("Set module name to", modName)
 }
 
 // Renders a set of data provided by the module into the format specified by the request. Normally, this means that the data is rendered into HTML (mobile vs. desktop is automatically selected), but we may add support for ?alt=json or such at a later point

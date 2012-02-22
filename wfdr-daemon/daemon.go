@@ -12,7 +12,6 @@ import (
 	"path"
 	// Local imports
 	"github.com/crazy2be/osutil"
-	"wfdr/dlog"
 	"wfdr/pipes"
 )
 
@@ -68,7 +67,7 @@ func main() {
 		case 0x11:
 			// Do nothing
 		default:
-			dlog.Println(sig)
+			log.Println(sig)
 			break
 		}
 	}
