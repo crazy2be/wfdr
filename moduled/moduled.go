@@ -2,28 +2,52 @@
 package moduled
 
 import (
-	"net/rpc"
-	"net/rpc/jsonrpc"
-	// Local imports
-	"wfdr/pipes"
+	"os"
+	"log"
 )
 
-// Connects to the pipe files, in order to allow this program to sent commands to the process management deamon.
-func RPCConnect() (*rpc.Client, error) {
-	// Pipes are reversed from what you would expect because we are connecting as a client, and they are named based on how the server uses them. Thus, the out pipe for the server is the in pipe for us.
-	outpipe := "cache/wfdr-deamon-pipe-in"
-	inpipe := "cache/wfdr-deamon-pipe-out"
 
-	infile, err := pipes.Open(inpipe)
-	if err != nil {
-		return nil, err
-	}
-	outfile, err := pipes.Open(outpipe)
-	if err != nil {
-		return nil, err
-	}
+var knownLayouts []string = []string{"mobile", "desktop"}
 
-	rwc := &pipes.PipeReadWriteCloser{Input: infile, Output: outfile}
-
-	return jsonrpc.NewClient(rwc), nil
+type CacheMonitor struct {
+	source *os.File
+	dest   *os.File
+	dlog   *log.Logger
+	typ    string
 }
+
+func NewCacheMonitor(source string, dest string, typ string) (*CacheMonitor, error) {
+	var err error
+	cm := new(CacheMonitor)
+	
+	cm.source, err = os.Open(source)
+	if err != nil {
+		return nil, err
+	}
+	
+	err = os.MkdirAll(dest, 0744)
+	if err != nil {
+		return nil, err
+	}
+	
+	cm.dest, err = os.Open(dest)
+	if err != nil {
+		return nil, err
+	}
+	
+	switch typ {
+		case "css", "js", "img", "tmpl":
+		default:
+			log.Println("wfdr/moduled: Warning: Unrecognized file type", typ)
+	}
+	cm.typ = typ
+	
+	devnull, err := os.Open(os.DevNull)
+	if err != nil {
+		return nil, err
+	}
+	cm.dlog = log.New(devnull, "wfdr/moduled/CacheMonitor:", log.LstdFlags)
+	
+	return cm, nil
+}
+
