@@ -53,7 +53,7 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 		layout := cm.layoutSpecific(fname)
 		if layout != -1 {
 			if !strings.HasPrefix(pathbits.Name(fname), pathbits.Name(basefile)) {
-				return errors.New(fmt.Sprintf("wfdr/moduled: File %s has no complementry default file.", fname))
+				return errors.New(fmt.Sprintf("wfdr/moduled: File %s has no complementry default file. (i.e. foobar_<layout> exists with no foobar file to complement it)", fname))
 			}
 			err = cm.updateFile(path.Join(source, basefile), path.Join(source, fname), path.Join(dest, basefile))
 			if err != nil {
