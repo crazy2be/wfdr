@@ -55,7 +55,7 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 			if !strings.HasPrefix(pathbits.Name(fname), pathbits.Name(basefile)) {
 				return errors.New(fmt.Sprintf("wfdr/moduled: File %s has no complementry default file. (i.e. foobar_<layout> exists with no foobar file to complement it)", fname))
 			}
-			err = cm.updateFile(path.Join(source, basefile), path.Join(source, fname), path.Join(dest, basefile))
+			err = cm.updateFile(path.Join(source, basefile), path.Join(source, fname), path.Join(dest, knownLayouts[layout], basefile))
 			if err != nil {
 				return err
 			}
@@ -167,7 +167,12 @@ func (cm *CacheMonitor) updateFile(source1, source2, dest string) error {
 	// We want to reload if either
 	// 1) The source was modified after the destination, or
 	// 2) The destination file does not exist (and thus should be created).
-	if fi1.ModTime().After(destfi.ModTime()) || err != nil {
+	if err != nil || fi1.ModTime().After(destfi.ModTime()) {
+		fpath, _ := path.Split(dest)
+		err = os.MkdirAll(fpath, 0744)
+		if err != nil {
+			return err
+		}
 		return cm.reloadFile(source1, source2, dest)
 	}
 	

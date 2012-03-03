@@ -1,0 +1,4 @@
+#!/bin/bash
+
+framework/merge-handlers/img
+exit $!
