@@ -13,7 +13,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"exp/signal"
+	"os/signal"
+	"syscall"
 	"path/filepath"
 	"strings"
 	// Local imports
@@ -92,15 +93,16 @@ type Visitor struct {
 }
 
 func (v *Visitor) InotifyLoop() {
-	//log.Println("Watching for inotify events...")
-	//log.Println("What")
+	sigc := make(chan os.Signal, 2)
+	signal.Notify(sigc, syscall.Signal(0x02), syscall.Signal(0x09), syscall.Signal(0x0f))
+	
 	for {
 		select {
 		case ev := <-v.watcher.Event:
 			//os.Exit(0)
 			v.WatcherEvent(ev)
-		case sig := <-signal.Incoming:
-			switch sig.(os.UnixSignal) {
+		case sig := <-sigc:
+			switch sig.(syscall.Signal) {
 			// SIGINT, SIGKILL, SIGTERM
 			case 0x02, 0x09, 0xf:
 				err := v.watcher.Close()

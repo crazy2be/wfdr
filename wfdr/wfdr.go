@@ -65,7 +65,11 @@ func mustRun(name string, args ...string) {
 	if !ok {
 		os.Exit(1)
 	}
-	os.Exit(ws.ExitStatus())
+	if ws.Success() {
+		os.Exit(0)
+	} else {
+		os.Exit(1)
+	}
 }
 
 func moduleAction(module, action string) {

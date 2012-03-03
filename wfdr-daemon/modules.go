@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"time"
+	"syscall"
 	// Local imports
 	"github.com/crazy2be/osutil"
 )
@@ -37,14 +38,14 @@ func ModuleRunning(name string) bool {
 	return module.IsRunning()
 }
 
-func exitWait(pid int, done chan <-error) {
+func exitWait(process *os.Process, done chan <-error) {
 	for {
-		waitmsg, err := os.Wait(pid, os.WUNTRACED)
+		ps, err := process.Wait()
 		if err != nil {
 			done <- err
 			return
 		}
-		if waitmsg.WaitStatus.Exited() {
+		if ps.Exited() {
 			done <- nil
 			return
 		}
@@ -52,14 +53,14 @@ func exitWait(pid int, done chan <-error) {
 }
 
 // Waits for a process with the given PID to exit.
-func ExitWait(pid int) error {
+func ExitWait(process *os.Process) error {
 	done := make(chan error)
-	go exitWait(pid, done)
+	go exitWait(process, done)
 	select {
 	case err := <-done:
 		return err
 	case <-time.After(15 * time.Second):
-		return errors.New(fmt.Sprintf("Timed out waiting for process with PID %d to exit. You might want to clean it up manually.", pid))
+		return errors.New(fmt.Sprintf("Timed out waiting for process with PID %d to exit. You might want to clean it up manually.", process.Pid))
 	}
 	panic("Not reached!")
 }
@@ -67,11 +68,11 @@ func ExitWait(pid int) error {
 func (m *Module) Stop() error {
 	log.Printf("Stopping module %s", m.Name)
 	if m.Name == "internal:shared" {
-		err := m.SyncProcess.Signal(os.UnixSignal(0x02))
+		err := m.SyncProcess.Signal(os.Interrupt)
 		if err != nil {
 			return err
 		}
-		err = ExitWait(m.SyncProcess.Pid)
+		err = ExitWait(m.SyncProcess)
 		if err != nil {
 			return err
 		}
@@ -79,8 +80,8 @@ func (m *Module) Stop() error {
 		return nil
 	}
 	// 0x02, or SIGINT.
-	err1 := m.MainProcess.Signal(os.UnixSignal(0x02))
-	err2 := m.SyncProcess.Signal(os.UnixSignal(0x02))
+	err1 := m.MainProcess.Signal(os.Interrupt)
+	err2 := m.SyncProcess.Signal(os.Interrupt)
 	if err1 != nil {
 		return errors.New(fmt.Sprintf("Failed to stop module %s:", m.Name, err1))
 	}
@@ -88,12 +89,12 @@ func (m *Module) Stop() error {
 		return errors.New(fmt.Sprintf("Failed to stop sync process for module %s (PID %d), you should probably stop it manually.", m.Name, m.SyncProcess.Pid))
 	}
 	
-	err1 = ExitWait(m.MainProcess.Pid)
+	err1 = ExitWait(m.MainProcess)
 	if err1 != nil {
 		return err1
 	}
 	
-	err2 = ExitWait(m.SyncProcess.Pid)
+	err2 = ExitWait(m.SyncProcess)
 	if err2 != nil {
 		return err2
 	}
@@ -110,7 +111,8 @@ func (m *Module) IsRunning() bool {
 		pid = m.MainProcess.Pid
 	}
 	
-	waitmsg, err := os.Wait(pid, os.WNOHANG|os.WUNTRACED)
+	var waitstatus syscall.WaitStatus
+	wpid, err := syscall.Wait4(pid, &waitstatus, syscall.WNOHANG|syscall.WUNTRACED, nil)
 	if err != nil {
 		// When would this happen?
 		log.Println("Unable to get process wait status:", err)
@@ -119,10 +121,10 @@ func (m *Module) IsRunning() bool {
 	}
 	
 	// If status is not available, the pid is 0.
-	if waitmsg.Pid == 0 {
+	if wpid == 0 {
 		return true
 	}
-	if waitmsg.WaitStatus.Exited() {
+	if waitstatus.Exited() {
 		delete(modules, m.Name)
 		return false
 	}

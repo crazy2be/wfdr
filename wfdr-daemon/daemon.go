@@ -8,8 +8,9 @@ import (
 	"net/rpc"
 	"net/rpc/jsonrpc"
 	"os"
-	"exp/signal"
+	"os/signal"
 	"path"
+	"syscall"
 	// Local imports
 	"github.com/crazy2be/osutil"
 	"wfdr/pipes"
@@ -57,9 +58,12 @@ func main() {
 
 	go monitorPipe(rwc)
 
+	sigc := make(chan os.Signal, 2)
+	signal.Notify(sigc, syscall.Signal(0x02), syscall.Signal(0x09), syscall.Signal(0x0f))
+	
 	for {
-		sig := <-signal.Incoming
-		switch sig.(os.UnixSignal) {
+		sig := <-sigc
+		switch sig.(syscall.Signal) {
 		// SIGINT, SIGKILL, SIGTERM
 		case 0x02, 0x09, 0xf:
 			Exit(0)
