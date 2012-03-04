@@ -36,7 +36,7 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 	sort.Strings(fnames)
 	
 	basefile := ""
-	genlays := make(map[int]bool)
+	genlays := make([]bool, len(knownLayouts))
 	for i := range fnames {
 		fname := fnames[i]
 		fi, err := os.Stat(path.Join(source, fname))
@@ -55,11 +55,14 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 			if !strings.HasPrefix(pathbits.Name(fname), pathbits.Name(basefile)) {
 				return errors.New(fmt.Sprintf("wfdr/moduled: File %s has no complementry default file. (i.e. foobar_<layout> exists with no foobar file to complement it)", fname))
 			}
-			err = cm.updateFile(path.Join(source, basefile), path.Join(source, fname), path.Join(dest, knownLayouts[layout], basefile))
+			err = cm.updateFile(
+				path.Join(source, basefile),
+				path.Join(source, fname),
+				path.Join(dest, knownLayouts[layout], basefile))
 			if err != nil {
 				return err
 			}
-			genlays[i] = true
+			genlays[layout] = true
 			continue
 		}
 		
@@ -70,6 +73,10 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 		}
 		
 		basefile = fname
+	}
+	err = cm.genRemaining(genlays, source, dest, basefile)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -127,13 +134,18 @@ func (cm *CacheMonitor) daemonEvent(ev *inotify.Event) {
 	}
 }
 
-func (cm *CacheMonitor) genRemaining(genlays map[int]bool, source, dest, name string) error {
-	for j := range genlays {
-		if genlays[j] == true {
-			genlays[j] = false
+func (cm *CacheMonitor) genRemaining(genlays []bool, source, dest, name string) error {
+	// Can't generate for empty file name...
+	if name == "" {
+		cm.dlog.Println("genRemaining called with empty name (typically happens for the first file in each directory)")
+		return nil
+	}
+	for i := range genlays {
+		if genlays[i] == true {
+			genlays[i] = false
 			continue
 		}
-		err := cm.updateFile(path.Join(source, name), "", path.Join(dest, name))
+		err := cm.updateFile(path.Join(source, name), "", path.Join(dest, knownLayouts[i], name))
 		if err != nil {
 			return err
 		}
@@ -168,11 +180,6 @@ func (cm *CacheMonitor) updateFile(source1, source2, dest string) error {
 	// 1) The source was modified after the destination, or
 	// 2) The destination file does not exist (and thus should be created).
 	if err != nil || fi1.ModTime().After(destfi.ModTime()) {
-		fpath, _ := path.Split(dest)
-		err = os.MkdirAll(fpath, 0744)
-		if err != nil {
-			return err
-		}
 		return cm.reloadFile(source1, source2, dest)
 	}
 	
@@ -189,6 +196,18 @@ func (cm *CacheMonitor) updateFile(source1, source2, dest string) error {
 }
 
 func (cm *CacheMonitor) reloadFile(source1, source2, dest string) error {
+	// Create the destination directory if it does not exist.
+	fpath, _ := path.Split(dest)
+	_, err := os.Stat(fpath)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(fpath, 0744)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+	
 	proc, err := osutil.RunWithEnv(
 		"framework/merge-handlers/" + cm.typ,
 		nil,

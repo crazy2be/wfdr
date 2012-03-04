@@ -1,13 +1,15 @@
 #!/bin/bash
 
-if [ -e $WFDR_SOURCE_1 ]; then
+if [ -f $WFDR_SOURCE_1 ]; then
 	cat $WFDR_SOURCE_1 > $WFDR_DEST
 fi
-if [ -e $WFDR_SOURCE_2 ]; then
+if [ -f $WFDR_SOURCE_2 ]; then
 	cat $WFDR_SOURCE_2 >> $WFDR_DEST
 fi
 
-if [ ! -e $WFDR_SOURCE_1 -a  ! -e $WFDR_SOURCE_2 ]; then
+if [ -f $WFDR_SOURCE_1 ] || [ -f $WFDR_SOURCE_2 ]; then
+	echo -n
+else
 	echo "Fatal error: Neither source 1 ($WFDR_SOURCE_1) or source 2 ($WFDR_SOURCE_2) exist."
 	exit 1
 fi
