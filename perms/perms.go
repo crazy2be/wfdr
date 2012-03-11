@@ -61,16 +61,12 @@ func ToEditPage(r *http.Request, httppath string) bool {
 // Basic function that retrieves the permissions a user has based on the contents of their request, including cookies and request path. Designed to be a simple function for most uses. If you want more control, you can use the GetGroupPerms and GetUserPerms functions.
 func Get(r *http.Request) (p *Permissions, err error) {
 	p = new(Permissions)
-	s, err := session.GetExisting(r)
+	uname, err := session.Get(r, "openid-email")
 	if err != nil {
 		p.Authenticated = false
 		return p, err
 	}
 	p.Authenticated = true
-	
-	// Current authentication is based on e-mail.
-	uname := s.Get("openid-email")
-	fmt.Println("Getting permissions for", uname)
 	
 	uperms, err := GetUserPerms(uname, r.URL.Path)
 	if err != nil {

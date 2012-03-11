@@ -14,26 +14,18 @@ type User struct {
 	settings map[string]string // User settings, represented as a map[string]string right now. Might be represented as an interface{} later.
 }
 
-func Get(c http.ResponseWriter, r *http.Request) (u *User, err error) {
-	s := session.Get(c, r)
+func Get(r *http.Request) (*User, error) {
+	var err error
+	u := new(User)
+	u.ID, err = session.Get(r, "openid-email")
 	if err != nil {
 		return nil, err
 	}
-	u = new(User)
-	u.ID = s.Get("openid-email")
 	err = u.Load()
-	return
-}
-
-func GetExisting(r *http.Request) (u *User, err error) {
-	s, err := session.GetExisting(r)
 	if err != nil {
 		return nil, err
 	}
-	u = new(User)
-	u.ID = s.Get("openid-email")
-	err = u.Load()
-	return
+	return u, nil
 }
 
 func (u *User) Get(key string) string {
