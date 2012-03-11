@@ -49,7 +49,7 @@ func (this PermissionsList) Swap(i, j int) {
 func ToEditPage(r *http.Request, httppath string) bool {
 	r1 := *r
 	r1.URL.Path = httppath
-	
+
 	// Ignore the error; permission bits default to all false anyway so the result should still be, at worst, less permissive than it really is.
 	p, _ := Get(r)
 	if p.Write {
@@ -67,28 +67,27 @@ func Get(r *http.Request) (p *Permissions, err error) {
 		return p, err
 	}
 	p.Authenticated = true
-	
+
 	uperms, err := GetUserPerms(uname, r.URL.Path)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if uperms == nil {
 		p.Recognized = false
 		return p, nil
 	}
 	p.Recognized = true
-	
+
 	p.Write = uperms.Write
 	p.Read = uperms.Read
-	
-	
+
 	groups, err := loadGroups(uname)
 	if err != nil {
 		// Group permissions can only possibly be *more* permissive than user permissions; failing to load the permissions for a user's group shouldn't be a fatal error.
 		return p, err
 	}
-	
+
 	for _, group := range groups {
 		gperms, err := GetGroupPerms(group, r.URL.Path)
 		if err != nil {

@@ -1,8 +1,8 @@
 package pathbits
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 type parsetest struct {

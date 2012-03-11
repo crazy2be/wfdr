@@ -1,16 +1,16 @@
 package moduled
 
 import (
-	"os"
-	"fmt"
-	"sort"
-	"path"
 	"errors"
-	"strings"
 	"exp/inotify"
-	
+	"fmt"
+	"os"
+	"path"
+	"sort"
+	"strings"
+
 	"wfdr/pathbits"
-	
+
 	"github.com/crazy2be/osutil"
 )
 
@@ -34,7 +34,7 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 		return err
 	}
 	sort.Strings(fnames)
-	
+
 	basefile := ""
 	genlays := make([]bool, len(knownLayouts))
 	for i := range fnames {
@@ -48,7 +48,7 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 			cm.syncDir(path.Join(source, fname), path.Join(dest, fname))
 			continue
 		}
-		
+
 		// Check if this file is layout specific. If so, process it, then move onto the next file.
 		layout := cm.layoutSpecific(fname)
 		if layout != -1 {
@@ -65,13 +65,13 @@ func (cm *CacheMonitor) syncDir(source string, dest string) error {
 			genlays[layout] = true
 			continue
 		}
-		
+
 		// Generate files for any layouts that do not have custom files.
 		err = cm.genRemaining(genlays, source, dest, basefile)
 		if err != nil {
 			return err
 		}
-		
+
 		basefile = fname
 	}
 	err = cm.genRemaining(genlays, source, dest, basefile)
@@ -156,13 +156,13 @@ func (cm *CacheMonitor) genRemaining(genlays []bool, source, dest, name string) 
 func (cm *CacheMonitor) layoutSpecific(name string) int {
 	for i := range knownLayouts {
 		layout := knownLayouts[i]
-		
+
 		matched, err := path.Match("*_"+layout+".*", name)
 		if err != nil {
 			// Only ever happens when our pattern syntax is incorrect, in which case panicing seems like the best solution.
 			panic(err)
 		}
-		
+
 		if matched {
 			return i
 		}
@@ -182,7 +182,7 @@ func (cm *CacheMonitor) updateFile(source1, source2, dest string) error {
 	if err != nil || fi1.ModTime().After(destfi.ModTime()) {
 		return cm.reloadFile(source1, source2, dest)
 	}
-	
+
 	if source2 != "" {
 		fi2, err := os.Stat(source2)
 		if err != nil {
@@ -207,9 +207,9 @@ func (cm *CacheMonitor) reloadFile(source1, source2, dest string) error {
 	} else if err != nil {
 		return err
 	}
-	
+
 	proc, err := osutil.RunWithEnv(
-		"framework/merge-handlers/" + cm.typ,
+		"framework/merge-handlers/"+cm.typ,
 		nil,
 		[]string{
 			"WFDR_SOURCE_1=" + source1,

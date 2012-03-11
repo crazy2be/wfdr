@@ -13,7 +13,7 @@ import (
 	"syscall"
 	// Local imports
 	"github.com/crazy2be/osutil"
-	"wfdr/pipes"
+	"wfdr/moduled"
 )
 
 func main() {
@@ -45,22 +45,22 @@ func main() {
 		log.Fatal("Pipe files already exist, the daemon is likely already running. However, it is also possible that the daemon was not cleanly shut down on its last run, and the files linger. If you suspect this to be the case, remove cache/wfdr-deamon-pipe-in and cache/wfdr-deamon-pipe-out, then try starting the daemon again.")
 	}
 
-	infile, err := pipes.MakeAndOpen(inpipe)
+	infile, err := moduled.OpenPipe(inpipe)
 	if err != nil {
 		log.Fatal(err)
 	}
-	outfile, err := pipes.MakeAndOpen(outpipe)
+	outfile, err := moduled.OpenPipe(outpipe)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rwc := &pipes.PipeReadWriteCloser{Input: infile, Output: outfile}
+	rwc := &moduled.PipeReadWriteCloser{Input: infile, Output: outfile}
 
 	go monitorPipe(rwc)
 
 	sigc := make(chan os.Signal, 2)
 	signal.Notify(sigc, syscall.Signal(0x02), syscall.Signal(0x09), syscall.Signal(0x0f))
-	
+
 	for {
 		sig := <-sigc
 		switch sig.(syscall.Signal) {
@@ -127,10 +127,10 @@ func monitorPipe(rwc io.ReadWriteCloser) {
 
 	serv := rpc.NewServer()
 	codec := jsonrpc.NewServerCodec(rwc)
-	
+
 	m := new(ModuleSrv)
 	serv.Register(m)
-	
+
 	log.Println("RPC server is started and awaiting commands!")
 	serv.ServeCodec(codec)
 }

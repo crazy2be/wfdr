@@ -2,8 +2,8 @@ package pages
 
 import (
 	"io/ioutil"
-	"path"
 	"os"
+	"path"
 )
 
 type Manager interface {
@@ -22,19 +22,19 @@ type FSManager struct {
 func (fsm *FSManager) Load(name string) (*Page, error) {
 	p := new(Page)
 	p.Name = path.Clean(name)
-	
+
 	titleb, err1 := ioutil.ReadFile(path.Join(fsm.TitleDir, p.Name))
 	p.Title = string(titleb)
 	if err1 != nil {
 		p.Title = "Error reading page title: " + err1.Error()
 	}
-	
+
 	var err2 error
 	p.Content, err2 = ioutil.ReadFile(path.Join(fsm.ContentDir, p.Name))
 	if err2 != nil {
 		p.Content = []byte("Error reading page content: " + err2.Error())
 	}
-	
+
 	if err1 != nil {
 		return p, err1
 	} else if err2 != nil {
@@ -57,7 +57,7 @@ func (fsm *FSManager) Save(name string, title string, content []byte) (err error
 
 	err1 := ioutil.WriteFile(path.Join(fsm.ContentDir, name), content, 0666)
 	err2 := ioutil.WriteFile(path.Join(fsm.TitleDir, name), []byte(title), 0666)
-	
+
 	if err1 != nil {
 		return err1
 	}
@@ -75,24 +75,24 @@ func (fsm *FSManager) Move(oldname string, newname string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	err = Save(newname, page.Title, page.Content)
 	if err != nil {
 		return err
 	}
-	
+
 	err = Delete(oldname)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
-func (fsm *FSManager) Delete(name string) (error) {
+func (fsm *FSManager) Delete(name string) error {
 	err1 := os.Remove(path.Join(fsm.TitleDir, name))
 	err2 := os.Remove(path.Join(fsm.ContentDir, name))
-	
+
 	if err1 != nil {
 		return err1
 	}
@@ -128,12 +128,12 @@ func (fsm *FSManager) listInDir(dir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	pagesinfo, err := dirf.Readdir(-1)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	for _, fi := range pagesinfo {
 		if fi.IsDir() {
 			morepages, err := fsm.listInDir(path.Join(dir, fi.Name()))

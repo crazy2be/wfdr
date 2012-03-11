@@ -5,16 +5,16 @@ package template
 
 import (
 	"encoding/json"
-	"net/http"
-	"strings"
 	"errors"
-	"time"
-	"log"
 	"fmt"
 	"io"
+	"log"
+	"net/http"
+	"strings"
+	"time"
 
-	"wfdr/perms"
 	"wfdr/fnotify"
+	"wfdr/perms"
 
 	"github.com/crazy2be/browser"
 )
@@ -131,7 +131,7 @@ func Execute(wr io.Writer, data *PageInfo) (err error) {
 	startTime := time.Now()
 	template, err := GetTemplate(prefix + data.Name)
 	endTime := time.Now()
-	
+
 	deltaTime := endTime.Sub(startTime)
 	fmt.Println("Took", float32(deltaTime)/(1000.0*1000.0*1000.0), "seconds to parse template", data.Name)
 

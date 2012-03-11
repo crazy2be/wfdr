@@ -14,9 +14,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
 	"path/filepath"
 	"strings"
+	"syscall"
 	// Local imports
 	"github.com/crazy2be/osutil"
 )
@@ -25,7 +25,7 @@ var dlog *log.Logger
 
 func main() {
 	sourceDir, destDir, destSubfolder, fileType, mode := "", "", "", "", ""
-	
+
 	log.SetPrefix(fmt.Sprintf("cache-monitor (PID %d) ", os.Getpid()))
 
 	var debug bool
@@ -95,7 +95,7 @@ type Visitor struct {
 func (v *Visitor) InotifyLoop() {
 	sigc := make(chan os.Signal, 2)
 	signal.Notify(sigc, syscall.Signal(0x02), syscall.Signal(0x09), syscall.Signal(0x0f))
-	
+
 	for {
 		select {
 		case ev := <-v.watcher.Event:

@@ -67,10 +67,10 @@ func StopModule(name string) error {
 }
 
 func handleError(err error, verb, name string) {
-// 	// WARNING: HACK HACK HACK
-// 	if strings.Index(err.Error(), "Unmarshal") != -1 {
-// 		return
-// 	}
+	// 	// WARNING: HACK HACK HACK
+	// 	if strings.Index(err.Error(), "Unmarshal") != -1 {
+	// 		return
+	// 	}
 	fmt.Println("Error "+verb+" module", name, ":", err)
 
 }

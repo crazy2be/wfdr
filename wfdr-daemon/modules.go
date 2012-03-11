@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 	"path"
-	"time"
 	"syscall"
+	"time"
 	// Local imports
 	"github.com/crazy2be/osutil"
 )
@@ -38,7 +38,7 @@ func ModuleRunning(name string) bool {
 	return module.IsRunning()
 }
 
-func exitWait(process *os.Process, done chan <-error) {
+func exitWait(process *os.Process, done chan<- error) {
 	for {
 		ps, err := process.Wait()
 		if err != nil {
@@ -88,17 +88,17 @@ func (m *Module) Stop() error {
 	if err2 != nil {
 		return errors.New(fmt.Sprintf("Failed to stop sync process for module %s (PID %d), you should probably stop it manually.", m.Name, m.SyncProcess.Pid))
 	}
-	
+
 	err1 = ExitWait(m.MainProcess)
 	if err1 != nil {
 		return err1
 	}
-	
+
 	err2 = ExitWait(m.SyncProcess)
 	if err2 != nil {
 		return err2
 	}
-	
+
 	delete(modules, m.Name)
 	return nil
 }
@@ -110,7 +110,7 @@ func (m *Module) IsRunning() bool {
 	} else {
 		pid = m.MainProcess.Pid
 	}
-	
+
 	var waitstatus syscall.WaitStatus
 	wpid, err := syscall.Wait4(pid, &waitstatus, syscall.WNOHANG|syscall.WUNTRACED, nil)
 	if err != nil {
@@ -119,7 +119,7 @@ func (m *Module) IsRunning() bool {
 		// Assume it is not running
 		return false
 	}
-	
+
 	// If status is not available, the pid is 0.
 	if wpid == 0 {
 		return true
@@ -156,7 +156,7 @@ func StartSharedSync() (*Module, error) {
 	if ModuleRunning(name) {
 		return GetModule(name)
 	}
-	
+
 	log.Printf("Syncing shared resources...")
 	var err error
 	_, err = osutil.WaitRun("shared-init", nil)
@@ -164,15 +164,15 @@ func StartSharedSync() (*Module, error) {
 		return nil, err
 	}
 	log.Println("Done syncing shared resources.")
-	
+
 	mod := new(Module)
 	mod.Name = name
-	
+
 	cmd, err := osutil.Run("shared-daemon", nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	mod.SyncProcess = cmd.Process
 	modules[name] = mod
 	return mod, nil
@@ -192,7 +192,7 @@ func StartModule(name string) (*Module, error) {
 	cwd, _ := os.Getwd()
 	jaildir := path.Join(cwd, "jails/"+name)
 	moddir := path.Join(cwd, "modules/"+name)
-	
+
 	err := JailInit(moddir, jaildir, name)
 	if err != nil {
 		return nil, err

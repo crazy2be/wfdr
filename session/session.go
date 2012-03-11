@@ -4,30 +4,30 @@
 package session
 
 import (
-	"encoding/base64"
 	"crypto/sha256"
-	"net/http"
+	"encoding/base64"
 	"errors"
-	"time"
-	"path"
 	"fmt"
+	"net/http"
 	"os"
+	"path"
+	"time"
 
 	"github.com/crazy2be/ini"
 )
 
-var defaultManager Manager;
+var defaultManager Manager
 
 // GenID returns a new randomly generated session identifier. The optional argument allows the caller to inject additional entropy into the session generation process.
 func GenID(entropy []byte) string {
 	seed := time.Now().UnixNano()
 	hash := sha256.New()
-	
+
 	fmt.Fprintf(hash, "%d", seed)
 	if entropy != nil {
 		fmt.Fprintf(hash, "%b", entropy)
 	}
-	
+
 	id := make([]byte, 0)
 	id = hash.Sum(id)
 	return base64.URLEncoding.EncodeToString(id)
@@ -36,7 +36,7 @@ func GenID(entropy []byte) string {
 // Manager describes a type which knows how to store and handle session information. It could be backed by a filesystem, database, or even just an in-memory cache depending on what makes the most sence for the application at hand.
 type Manager interface {
 	Get(id, key string) (string, error)
-	Set(id, key, val string) (error)
+	Set(id, key, val string) error
 }
 
 // Get attempts to find the sessionid cookie in r, then tries to find the value of the element given by key in the defaultManager. Returns an empty string and an error if the session or key does not exist.
@@ -45,7 +45,7 @@ func Get(r *http.Request, key string) (string, error) {
 }
 
 // Set first attempts to find the current session associated with r, if any. If that fails, it will create a new session and associate it with c. Finally, it will set key to val using the defaultManager.
-func Set(c http.ResponseWriter, r *http.Request, key, val string) (error) {
+func Set(c http.ResponseWriter, r *http.Request, key, val string) error {
 	return SetWith(defaultManager, c, r, key, val)
 }
 
@@ -55,11 +55,11 @@ func GetWith(m Manager, r *http.Request, key string) (string, error) {
 	if err != nil {
 		return "", errors.New("No sessionid found!" + err.Error())
 	}
-	
+
 	return m.Get(cookie.Value, key)
 }
 
-// SetWith is similar to Set(), but allows you to specify a manager different from the defaultManager.
+// SetWith is the same as Set(), but allows you to specify a manager different from the defaultManager.
 func SetWith(m Manager, c http.ResponseWriter, r *http.Request, key, val string) error {
 	id := ""
 	cookie, err := r.Cookie("sessionid")
@@ -91,14 +91,14 @@ func NewFSManager(dir string) (*FSManager, error) {
 func (fsm *FSManager) Get(id, key string) (string, error) {
 	filename := path.Join(fsm.path, id)
 	vals, err := ini.Load(filename)
-	if (err != nil) {
+	if err != nil {
 		return "", err
 	}
 	return vals[key], nil
 }
 
 // Set finds the file corresponding to id, loads it into memory, sets the corresponding key to the specified val, and then writes it back to disk. Returns an error, if any.
-func (fsm *FSManager) Set(id, key, val string) (error) {
+func (fsm *FSManager) Set(id, key, val string) error {
 	filename := path.Join(fsm.path, id)
 	vals, err := ini.Load(filename)
 	if err != nil {
