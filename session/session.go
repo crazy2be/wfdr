@@ -1,7 +1,6 @@
-// A simple package that allows persistent server-side storage of session settings. Typical usage is just 
-//	s := session.Get(c, r)
-//	s.Get("somekey")
-//	s.Set("somekey", "somevalue")
+// A simple package that allows persistent server-side storage of session settings through a variety of backends. Typical usage is just 
+//	err := session.Set(c, r, "foo", "bar")
+//	val, err := session.Get(r, "foo")
 package session
 
 import (
