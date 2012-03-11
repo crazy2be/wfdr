@@ -5,130 +5,119 @@
 package session
 
 import (
+	"encoding/base64"
+	"crypto/sha256"
 	"net/http"
-	"strconv"
 	"errors"
 	"time"
-	"log"
+	"path"
+	"fmt"
 	"os"
 
 	"github.com/crazy2be/ini"
 )
 
-// The lastID given out. Since all IDs are assigned in numeric order, this should ensure there are no collisions.
-var lastID int64
+var defaultManager Manager;
 
-// Session represents all information associated with a user's session.
-type Session struct {
-	ID       int64
-	settings map[string]string
-	updated  bool
-}
-
-// Convieniance function to get the session object for a request based on the
-// value of the sessionid cookie. Creates a new session if none is found.
-func Get(c http.ResponseWriter, r *http.Request) (s *Session) {
-	s, err := GetExisting(r)
-	if err == nil {
-		return s
+// GenID returns a new randomly generated session identifier. The optional argument allows the caller to inject additional entropy into the session generation process.
+func GenID(entropy []byte) string {
+	seed := time.Now().UnixNano()
+	hash := sha256.New()
+	
+	fmt.Fprintf(hash, "%d", seed)
+	if entropy != nil {
+		fmt.Fprintf(hash, "%b", entropy)
 	}
-	s = Generate()
-	s.AttachTo(c)
-
-	return
+	
+	id := make([]byte, 0)
+	id = hash.Sum(id)
+	return base64.URLEncoding.EncodeToString(id)
 }
 
-// Same as above, but only gets a session if one exists, and does not attempt to create one.
-func GetExisting(r *http.Request) (s *Session, err error) {
-	cookie, err := r.Cookie("sessionid")
+// Manager describes a type which knows how to store and handle session information. It could be backed by a filesystem, database, or even just an in-memory cache depending on what makes the most sence for the application at hand.
+type Manager interface {
+	Get(id, key string) (string, error)
+	Set(id, key, val string) (error)
+}
 
+// Get attempts to find the sessionid cookie in r, then tries to find the value of the element given by key in the defaultManager. Returns an empty string and an error if the session or key does not exist.
+func Get(r *http.Request, key string) (string, error) {
+	return GetWith(defaultManager, r, key)
+}
+
+// Set first attempts to find the current session associated with r, if any. If that fails, it will create a new session and associate it with c. Finally, it will set key to val using the defaultManager.
+func Set(c http.ResponseWriter, r *http.Request, key, val string) (error) {
+	return SetWith(defaultManager, c, r, key, val)
+}
+
+// GetWith is the same as Get(), but allows you to specify a manager different from the defaultManager.
+func GetWith(m Manager, r *http.Request, key string) (string, error) {
+	cookie, err := r.Cookie("sessionid")
 	if err != nil {
-		err = errors.New("No sessionid found!" + err.Error())
+		return "", errors.New("No sessionid found!" + err.Error())
+	}
+	
+	return m.Get(cookie.Value, key)
+}
+
+// SetWith is similar to Set(), but allows you to specify a manager different from the defaultManager.
+func SetWith(m Manager, c http.ResponseWriter, r *http.Request, key, val string) error {
+	id := ""
+	cookie, err := r.Cookie("sessionid")
+	if err != nil {
+		id = GenID([]byte(r.RemoteAddr))
+		c.Header().Add("Cookie", "sessionid="+id+"; path=/")
+	} else {
+		id = cookie.Value
+	}
+	return m.Set(id, key, val)
+}
+
+// FSManager is the current default storage mechanism, relying on the local filesystem to store session information in ini files.
+type FSManager struct {
+	path string
+}
+
+// NewFSManager creates a new FSManager with storage in the location pointed at by dir, creating it if necessary. Returns an error if the directory pointed at by dir could not be created.
+func NewFSManager(dir string) (*FSManager, error) {
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
 		return nil, err
 	}
-
-	sid := cookie.Value
-	id, err := strconv.ParseInt(sid, 10, 64)
-	s, err = Load(id)
-	return s, err
+	fsm := &FSManager{dir}
+	return fsm, nil
 }
 
-// Allocates a new session object and returns it.
-func NewSession() (s *Session) {
-	s = new(Session)
-	s.settings = make(map[string]string, 10)
-	s.updated = false
-	return s
-}
-
-// Creates a new session object, with the ID set to a unique number. Future versions may use a hash, but the ID will always be gaurenteed to be unique. In order to actually use a session, you should use the Get() or GetExisting() methods, they are far more useful.
-func Generate() (s *Session) {
-	s = NewSession()
-	// TODO: Generate some sort of hash for the ID, rather than an int. The int would theoretically be fairly easy to guess.
-	idseed := time.Now().UnixNano()
-	// Prevent two requests during the same nanosecond from getting duplicate
-	// sessionids.
-	if idseed == lastID {
-		idseed++
+// Get attempts to find the file corresponding to id, searches through it for key, and returns the value and an error if any. Returns an empty string and an error if the specified id does not exist, returns an empty string if the id exists but the key does not.
+func (fsm *FSManager) Get(id, key string) (string, error) {
+	filename := path.Join(fsm.path, id)
+	vals, err := ini.Load(filename)
+	if (err != nil) {
+		return "", err
 	}
-	lastID = idseed
-
-	s.ID = idseed
-
-	return
+	return vals[key], nil
 }
 
-// Sets a key in the map, then saves the session file.
-func (s *Session) Set(name, value string) {
-	s.settings[name] = value
-	s.updated = true
-	// Note that this will cause lag if called a lot.
-	s.Save()
-}
-
-// Gets a key from the map. Returns a nil string if the key is empty.
-func (s *Session) Get(name string) (value string) {
-	return s.settings[name]
-}
-
-// For advanced purposes only, use Get() or Set() whenever possible.
-func (s *Session) GetMap() map[string]string {
-	return s.settings
-}
-
-// Should be called AT THE START, before any html is sent.
-func (s *Session) AttachTo(c http.ResponseWriter) {
-	// TODO: Should eventually be setting an expiration date on this...
-	header := c.Header()
-	header["Set-Cookie"] = append(header["Set-Cookie"], "sessionid="+strconv.FormatInt(s.ID, 10)+"; path=/")
-}
-
-// Loads a session from disk with the given ID. Returns an error if the session does not exist on the server, or if the file cannot be opened.
-func Load(id int64) (s *Session, err error) {
-	s = new(Session)
-	filename := "data/shared/sessions/" + strconv.FormatInt(id, 10)
-	log.Println("Loading session info from", filename)
-	s.ID = id
-	s.settings, err = ini.Load(filename)
+// Set finds the file corresponding to id, loads it into memory, sets the corresponding key to the specified val, and then writes it back to disk. Returns an error, if any.
+func (fsm *FSManager) Set(id, key, val string) (error) {
+	filename := path.Join(fsm.path, id)
+	vals, err := ini.Load(filename)
 	if err != nil {
-		return
+		// Assume no session file exists yet
+		vals = make(map[string]string, 1)
 	}
-
-	return
-}
-
-// Forces the session to be saved to disk. Note that the sessions are saved to disk on each change currently, since there are very few changes.
-func (s *Session) Save() (err error) {
-	filename := "data/shared/sessions/" + strconv.FormatInt(s.ID, 10)
-	log.Println("Saving session info to", filename)
-	err = ini.Save(filename, s.settings)
+	vals[key] = val
+	err = ini.Save(filename, vals)
 	if err != nil {
-		return
+		return err
 	}
-	return
+	return nil
 }
 
-// Make required directories
 func init() {
-	os.MkdirAll("data/shared/sessions", 0755)
+	var err error
+	defaultManager, err = NewFSManager("data/shared/sessions")
+	if err != nil {
+		panic(err)
+	}
 }
