@@ -1,6 +1,7 @@
 package moduled
 
 import (
+	"errors"
 	"net/rpc"
 	"net/rpc/jsonrpc"
 )
@@ -13,7 +14,7 @@ func RPCConnect() (*rpc.Client, error) {
 
 	infile, err := OpenPipe(inpipe)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(err.Error() + ". In all likelyhood, wfdr-deamon is not running. Start it and this error should go away! It's also possible that you don't have permission to talk to the deamon process, in which case i can't help you.")
 	}
 	outfile, err := OpenPipe(outpipe)
 	if err != nil {

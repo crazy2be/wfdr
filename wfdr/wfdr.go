@@ -77,7 +77,19 @@ func moduleAction(module, action string) {
 	os.Setenv("PATH", os.Getenv("PATH")+":framework/sh:framework/bin")
 	switch action {
 	case "stop", "start", "restart":
-		mustRun("wfdr-module-manager", "-action="+action, "-modulename="+module)
+		client, err := moduled.RPCConnect()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if action == "stop" || action == "restart" {
+			err = moduled.StopModule(client, module)
+		}
+		if err != nil {
+			break
+		}
+		if action == "start" || action == "restart" {
+			err = moduled.StartModule(client, module)
+		}
 	case "compile":
 		mustRun("wfdr-compile", module)
 	case "recompile":
