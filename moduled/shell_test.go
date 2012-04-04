@@ -1,8 +1,8 @@
 package moduled
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
 	"testing"
 )
 
@@ -46,9 +46,9 @@ var shellTests = []shellTest{
 func TestShell(t *testing.T) {
 	in := &bytes.Buffer{}
 	out := &bytes.Buffer{}
-	
+
 	s := NewShell(in, out)
-	
+
 	for _, tst := range shellTests {
 		fmt.Fprintf(in, tst.in)
 		args, err := s.Prompt()

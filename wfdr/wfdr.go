@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-// 	buf := make([]byte, 3)
+	// 	buf := make([]byte, 3)
 	state, err := moduled.SttyCbreak()
 	defer state.Undo()
 	if err != nil {

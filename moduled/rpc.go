@@ -74,8 +74,8 @@ func (c *Conn) InterpretCommand(args []string) error {
 	}
 	cmd := args[0]
 	args = args[1:]
-	
-	switch (cmd) {
+
+	switch cmd {
 	case "start":
 		for _, module := range args {
 			err := c.Start(module)
@@ -98,6 +98,6 @@ func (c *Conn) InterpretCommand(args []string) error {
 			return c.Restart(module)
 		}
 	}
-	
+
 	return nil
 }

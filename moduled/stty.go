@@ -1,10 +1,10 @@
 package moduled
 
 import (
-	"os"
-	"log"
-	"os/exec"
 	"errors"
+	"log"
+	"os"
+	"os/exec"
 )
 
 type sttyState string
