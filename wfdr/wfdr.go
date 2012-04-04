@@ -8,11 +8,31 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	// Local imports
+
 	"wfdr/moduled"
+
+// 	"github.com/kylelemons/goat"
 )
 
 func main() {
+// 	buf := make([]byte, 3)
+	state, err := moduled.SttyCbreak()
+	defer state.Undo()
+	if err != nil {
+		log.Println(state)
+		log.Fatal(err)
+	}
+	s := moduled.NewShell(os.Stdin, os.Stdout)
+	for {
+		cmd, err := s.ReadCommand()
+		if err != nil {
+			fmt.Println("Error while reading command: ", err)
+		}
+		if cmd != nil {
+			fmt.Printf("Read command: %#v\n", cmd)
+		}
+	}
+	os.Exit(0)
 	if len(os.Args) < 2 {
 		printHelp()
 		os.Exit(0)
@@ -82,13 +102,13 @@ func moduleAction(module, action string) {
 			log.Fatal(err)
 		}
 		if action == "stop" || action == "restart" {
-			err = moduled.StopModule(client, module)
+			err = client.Stop(module)
 		}
 		if err != nil {
 			break
 		}
 		if action == "start" || action == "restart" {
-			err = moduled.StartModule(client, module)
+			err = client.Start(module)
 		}
 	case "compile":
 		mustRun("wfdr-compile", module)
@@ -107,8 +127,7 @@ func moduleAction(module, action string) {
 		}
 		for _, fi := range fis {
 			name := fi.Name()
-			var running bool
-			err = client.Call("ModuleSrv.Status", &name, &running)
+			running, err := client.Status(name)
 			if err != nil {
 				log.Fatal(err)
 			}
