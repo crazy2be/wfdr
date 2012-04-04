@@ -67,3 +67,37 @@ func (c *Conn) Status(name string) (running bool, err error) {
 func (c *Conn) Close() error {
 	return c.client.Close()
 }
+
+func (c *Conn) InterpretCommand(args []string) error {
+	if args == nil || len(args) < 1 {
+		return errors.New("No command provided!")
+	}
+	cmd := args[0]
+	args = args[1:]
+	
+	switch (cmd) {
+	case "start":
+		for _, module := range args {
+			err := c.Start(module)
+			if err != nil {
+				return err
+			}
+		}
+	case "stop":
+		for _, module := range args {
+			if len(args) < 1 {
+				return errors.New("Module name required!")
+			}
+			return c.Stop(module)
+		}
+	case "restart":
+		for _, module := range args {
+			if len(args) < 1 {
+				return errors.New("Module name required!")
+			}
+			return c.Restart(module)
+		}
+	}
+	
+	return nil
+}
