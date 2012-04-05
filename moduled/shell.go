@@ -27,7 +27,7 @@ type Shell struct {
 	wr      io.Writer
 }
 
-// NewShell returns a Shell initialized with the given reader and writer (commonly attached to os.Stdin and os.Stdout respectively).
+// NewShell returns a Shell initialized with the given reader and writer (commonly attached to os.Stdin and os.Stdout respectively), as well as a simple default prompt.
 func NewShell(rd io.Reader, wr io.Writer) *Shell {
 	s := new(Shell)
 	s.rd = bufio.NewReader(rd)
@@ -57,7 +57,9 @@ func (s *Shell) parseTokens() ([]string, error) {
 	return tokens, nil
 }
 
-// Prompt presents the user with an interactive prompt where they can enter a command, and includes facilities for backspace and history. Returns the parsed command string (command and arguments), and an error, if any.
+// Prompt presents the user with an interactive prompt where they can enter a command, and includes facilities for inline editing, such as removing characters with backspace and moving through the line with the left and right arrow keys.
+// It also includes a endless history.
+// Returns the parsed command string (command and arguments), and an error, if any.
 func (s *Shell) Prompt() ([]string, error) {
 	s.linebuf = nil
 	s.histpos = -1
