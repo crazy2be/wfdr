@@ -57,7 +57,7 @@ func (s *Shell) parseTokens() ([]string, error) {
 	return tokens, nil
 }
 
-// Prompt presents the user with an interactive prompt where they can enter a command, and includes facilities for backspace, and history. Returns the parsed command string (command and arguments), and an error, if any.
+// Prompt presents the user with an interactive prompt where they can enter a command, and includes facilities for backspace and history. Returns the parsed command string (command and arguments), and an error, if any.
 func (s *Shell) Prompt() ([]string, error) {
 	s.linebuf = nil
 	s.histpos = -1
