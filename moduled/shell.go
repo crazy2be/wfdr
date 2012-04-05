@@ -1,8 +1,8 @@
 package moduled
 
 import (
-	"bufio"
 	"errors"
+	"bufio"
 	"fmt"
 	"io"
 )
@@ -10,18 +10,21 @@ import (
 // type Shell provides a simple, interactive shell through which users can interact with your program. Includes unlimited history and line editing.
 // Bug: Multiple line input doesn't work correctly with in-line editing.
 type Shell struct {
+	// Text to display as a prompt
+	PS1     string
+	
 	// Full history, lines stored as raw input (not parsed)
-	hist [][]byte
+	hist    [][]byte
 	// Out current position in the history (used when "scrolling through" previous commands)
 	histpos int
-
+	
 	// Buffer of characters on the current line
 	linebuf []byte
 	// Current position of the cursor
 	linepos int
-
-	rd *bufio.Reader
-	wr io.Writer
+	
+	rd     *bufio.Reader
+	wr      io.Writer
 }
 
 // NewShell returns a Shell initialized with the given reader and writer (commonly attached to os.Stdin and os.Stdout respectively).
@@ -29,6 +32,7 @@ func NewShell(rd io.Reader, wr io.Writer) *Shell {
 	s := new(Shell)
 	s.rd = bufio.NewReader(rd)
 	s.wr = wr
+	s.PS1 = "\x1B[32;1m >>> \x1B[m"
 	return s
 }
 
@@ -37,7 +41,7 @@ func NewShell(rd io.Reader, wr io.Writer) *Shell {
 func (s *Shell) parseTokens() ([]string, error) {
 	tokens := make([]string, 0)
 	buf := make([]byte, 0)
-
+	
 	for _, b := range s.linebuf {
 		switch b {
 		case ' ', '\t':
@@ -58,35 +62,37 @@ func (s *Shell) Prompt() ([]string, error) {
 	s.linebuf = nil
 	s.histpos = -1
 	s.linepos = -1
+	fmt.Fprintf(s.wr, s.PS1)
 	for {
 		b, err := s.rd.ReadByte()
 		if err != nil {
 			return nil, err
 		}
-
+		
 		switch b {
 		case '\n':
 			if s.histpos == -1 {
 				s.hist = append(s.hist, s.linebuf)
 			} else {
-				s.hist[len(s.hist)-1] = s.linebuf
+				s.hist[len(s.hist) - 1] = s.linebuf
 			}
 			return s.parseTokens()
-		case 127: // Backspace (Actually DEL)
+		case 8, 127: // Backspace (Actually DEL)
 			if s.linepos == 0 {
 				s.overwrite(2)
 				break
 			}
-			s.overwrite(3)
 			if len(s.linebuf) == 0 {
+				s.overwrite(2)
 				break
 			}
+			s.overwrite(3)
 			if s.linepos == -1 {
 				s.linebuf = s.linebuf[:len(s.linebuf)-1]
 				break
 			}
-
-			s.overwritef(len(s.linebuf) - s.linepos + 1)
+			
+			s.overwritef(len(s.linebuf)-s.linepos+1)
 			s.linebuf = append(s.linebuf[:s.linepos-1], s.linebuf[s.linepos:]...)
 			s.linepos--
 			if s.linepos < 0 {
@@ -105,7 +111,7 @@ func (s *Shell) Prompt() ([]string, error) {
 			if s.linepos == -1 {
 				s.linebuf = append(s.linebuf, b)
 			} else {
-				s.overwritef(len(s.linebuf) - s.linepos)
+				s.overwritef(len(s.linebuf)-s.linepos)
 				s.linebuf = append(s.linebuf[:s.linepos], append([]byte{b}, s.linebuf[s.linepos:]...)...)
 				s.linepos++
 			}
@@ -123,23 +129,23 @@ func (s *Shell) readEscSeq() (Seq, error) {
 	if b != '[' {
 		return SEQ_NONE, errors.New("Expected '[' after ESC")
 	}
-
+	
 	pmc := make([]byte, 0)
 	for {
 		b, err = s.rd.ReadByte()
 		if err != nil {
 			return SEQ_NONE, err
 		}
-		if b < 22 {
+		if (b < 22) {
 			return SEQ_NONE, fmt.Errorf("Unexpected character %d ('%c')", b, b)
-		} else if b <= 47 {
+		} else if (b <= 47) {
 			pmc = append(pmc, b)
-		} else if b <= 57 {
+		} else if (b <= 57) {
 			// Number
 			return SEQ_NONE, fmt.Errorf("Numbers in escape sequences not yet supported!")
-		} else if b <= 63 {
+		} else if (b <= 63) {
 			return SEQ_NONE, fmt.Errorf("Unexpected character %d ('%c')", b, b)
-		} else if b <= 126 {
+		} else if (b <= 126) {
 			return Seq(b), nil
 		} else {
 			return SEQ_NONE, fmt.Errorf("Unexpected character %d ('%c')", b, b)
@@ -162,10 +168,10 @@ func (s *Shell) bkspb(b byte) {
 
 // charat returns the character at the given offset from the current cursor position. It is used to replace portions of the line when their contents are overwritten with escape sequences (such as when the arrow keys are pressed), or to overwrite the remaining portion of the line when backspace is pressed.
 func (s *Shell) charat(offset int) byte {
-	if s.linepos < 0 || s.linepos+offset >= len(s.linebuf) {
+	if s.linepos < 0 || s.linepos + offset >= len(s.linebuf) {
 		return ' '
 	}
-	return s.linebuf[s.linepos+offset]
+	return s.linebuf[s.linepos + offset]
 }
 
 // overwritef overwrites num characters in front of the cursor with values given by charat(). The cursor position is the same before and after the call (although it moves during the call)
@@ -194,7 +200,7 @@ func (s *Shell) handleEscSeq(seq Seq) error {
 	if seq == SEQ_UP || seq == SEQ_DOWN {
 		if s.histpos == -1 {
 			s.hist = append(s.hist, s.linebuf)
-			s.histpos = len(s.hist) - 1
+			s.histpos = len(s.hist)-1
 		}
 	}
 	if seq == SEQ_LEFT || seq == SEQ_RIGHT {
@@ -202,7 +208,7 @@ func (s *Shell) handleEscSeq(seq Seq) error {
 			s.linepos = len(s.linebuf)
 		}
 	}
-	switch seq {
+	switch (seq) {
 	case SEQ_UP:
 		s.histpos--
 		if s.histpos < 0 {
@@ -212,7 +218,7 @@ func (s *Shell) handleEscSeq(seq Seq) error {
 		}
 	case SEQ_DOWN:
 		s.histpos++
-		if s.histpos > len(s.hist)-1 {
+		if s.histpos > len(s.hist) - 1 {
 			s.histpos = len(s.hist) - 1
 			s.bksp(4)
 			return nil

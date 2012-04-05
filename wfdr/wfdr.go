@@ -15,24 +15,6 @@ import (
 )
 
 func main() {
-	// 	buf := make([]byte, 3)
-	state, err := moduled.SttyCbreak()
-	defer state.Undo()
-	if err != nil {
-		log.Println(state)
-		log.Fatal(err)
-	}
-	s := moduled.NewShell(os.Stdin, os.Stdout)
-	for {
-		cmd, err := s.ReadCommand()
-		if err != nil {
-			fmt.Println("Error while reading command: ", err)
-		}
-		if cmd != nil {
-			fmt.Printf("Read command: %#v\n", cmd)
-		}
-	}
-	os.Exit(0)
 	if len(os.Args) < 2 {
 		printHelp()
 		os.Exit(0)

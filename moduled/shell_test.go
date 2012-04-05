@@ -1,8 +1,10 @@
 package moduled
 
 import (
-	"bytes"
+	"os"
+	"log"
 	"fmt"
+	"bytes"
 	"testing"
 )
 
@@ -46,9 +48,9 @@ var shellTests = []shellTest{
 func TestShell(t *testing.T) {
 	in := &bytes.Buffer{}
 	out := &bytes.Buffer{}
-
+	
 	s := NewShell(in, out)
-
+	
 	for _, tst := range shellTests {
 		fmt.Fprintf(in, tst.in)
 		args, err := s.Prompt()
@@ -56,5 +58,24 @@ func TestShell(t *testing.T) {
 			nerr(t, tst.in, err)
 		}
 		eq(t, args, tst.out)
+	}
+}
+
+func ExampleShell() {
+	state, err := SttyCbreak()
+	defer state.Undo()
+	if err != nil {
+		log.Println(state)
+		log.Fatal(err)
+	}
+	s := NewShell(os.Stdin, os.Stdout)
+	for {
+		cmd, err := s.Prompt()
+		if err != nil {
+			fmt.Println("Error while reading command: ", err)
+		}
+		if cmd != nil {
+			fmt.Printf("Read command: %#v\n", cmd)
+		}
 	}
 }
