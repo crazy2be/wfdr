@@ -20,7 +20,7 @@ type Shell struct {
 	
 	// Buffer of characters on the current line
 	linebuf []byte
-	// Current position of the cursor
+	// Current position of the cursor. The default value of -1 indicates that the cursor has not been moved.
 	linepos int
 	
 	rd     *bufio.Reader

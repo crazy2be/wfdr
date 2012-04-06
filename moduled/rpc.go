@@ -1,6 +1,8 @@
 package moduled
 
 import (
+	"io"
+	"fmt"
 	"errors"
 	"net/rpc"
 	"net/rpc/jsonrpc"
@@ -68,36 +70,49 @@ func (c *Conn) Close() error {
 	return c.client.Close()
 }
 
-func (c *Conn) InterpretCommand(args []string) error {
+func (c *Conn) runCmdOnMods(cmd func(string) error, mods []string) error {
+	for _, mod := range mods {
+		err := cmd(mod)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Conn) runCmdOnModsWrapper(cmd func (string) error, mods []string) func (io.Writer) {
+	return func (wr io.Writer) {
+		err := c.runCmdOnMods(cmd, mods)
+		if err != nil {
+			fmt.Fprintln(wr, err)
+		}
+	}
+}
+
+type Cmd func (io.Writer)
+
+// InterpretCommand takes a string of arguments, either from an interactive shell or from the command line, and interprets them as a command, which it then executes. 
+func (c *Conn) InterpretCommand(args []string) (Cmd, error) {
 	if args == nil || len(args) < 1 {
-		return errors.New("No command provided!")
+		return nil, errors.New("No command provided!")
 	}
 	cmd := args[0]
 	args = args[1:]
-
+	
+	if len(args) < 1 {
+		return nil, errors.New("No module name(s) provided!")
+	}
+	
 	switch cmd {
 	case "start":
-		for _, module := range args {
-			err := c.Start(module)
-			if err != nil {
-				return err
-			}
-		}
+		return c.runCmdOnModsWrapper(func (mod string) error {return c.Start(mod)}, args), nil
 	case "stop":
-		for _, module := range args {
-			if len(args) < 1 {
-				return errors.New("Module name required!")
-			}
-			return c.Stop(module)
-		}
+		return c.runCmdOnModsWrapper(func (mod string) error {return c.Stop(mod)}, args), nil
 	case "restart":
-		for _, module := range args {
-			if len(args) < 1 {
-				return errors.New("Module name required!")
-			}
-			return c.Restart(module)
-		}
+		return c.runCmdOnModsWrapper(func(mod string) error {return c.Restart(mod)}, args), nil
+	case "status":
+		return nil, errors.New("Status command not implemented!")
 	}
 
-	return nil
+	return nil, nil
 }
