@@ -7,6 +7,20 @@ import (
 	"io"
 )
 
+type lineBuf []byte
+
+func (lb lineBuf) add(b byte) lineBuf {
+	return append(lb, b)
+}
+
+func (lb lineBuf) insert(pos int, b byte) lineBuf {
+	return append(lb[:pos], append([]byte{b}, lb[pos:]...)...)
+}
+
+func (lb lineBuf) remove(pos int) lineBuf {
+	return append(lb[:pos-1], lb[pos:]...)
+}
+
 // type Shell provides a simple, interactive shell through which users can interact with your program. Includes unlimited history and line editing.
 // Bug: Multiple line input doesn't work correctly with in-line editing.
 type Shell struct {
@@ -19,7 +33,7 @@ type Shell struct {
 	histpos int
 	
 	// Buffer of characters on the current line
-	linebuf []byte
+	linebuf lineBuf
 	// Current position of the cursor. The default value of -1 indicates that the cursor has not been moved.
 	linepos int
 	
@@ -95,7 +109,7 @@ func (s *Shell) Prompt() ([]string, error) {
 			}
 			
 			s.overwritef(len(s.linebuf)-s.linepos+1)
-			s.linebuf = append(s.linebuf[:s.linepos-1], s.linebuf[s.linepos:]...)
+			s.linebuf = s.linebuf.remove(s.linepos)
 			s.linepos--
 			if s.linepos < 0 {
 				s.linepos = 0
@@ -111,10 +125,10 @@ func (s *Shell) Prompt() ([]string, error) {
 			}
 		default:
 			if s.linepos == -1 {
-				s.linebuf = append(s.linebuf, b)
+				s.linebuf = s.linebuf.add(b)
 			} else {
 				s.overwritef(len(s.linebuf)-s.linepos)
-				s.linebuf = append(s.linebuf[:s.linepos], append([]byte{b}, s.linebuf[s.linepos:]...)...)
+				s.linebuf = s.linebuf.insert(s.linepos, b)
 				s.linepos++
 			}
 		}
