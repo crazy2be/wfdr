@@ -260,7 +260,13 @@ func (s *Shell) handleEscSeq(seq Seq) error {
 		return fmt.Errorf("Read unsupported escape sequence of %d ('%c')", seq, seq)
 	}
 	if seq == SEQ_UP || seq == SEQ_DOWN {
-		s.bksp(len(s.linebuf) + 4)
+		if (s.linepos == -1) {
+			s.bksp(len(s.linebuf) + 4)
+		} else {
+			s.overwritef(len(s.linebuf) - s.linepos)
+			s.bksp(s.linepos + 4)
+			s.linepos = -1
+		}
 		s.linebuf = make([]byte, len(s.hist[s.histpos]))
 		copy(s.linebuf, s.hist[s.histpos])
 		fmt.Fprintf(s.wr, "%s", s.linebuf)
