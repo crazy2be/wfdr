@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 )
 
 type lineBuf []byte
@@ -77,13 +78,14 @@ func (s *Shell) parseTokens() ([]string, error) {
 func (s *Shell) Prompt() ([]string, error) {
 	s.linebuf = nil
 	s.histpos = -1
-	s.linepos = -1
+	s.linepos = 0
 	fmt.Fprintf(s.wr, s.PS1)
 	for {
 		b, err := s.rd.ReadByte()
 		if err != nil {
 			return nil, err
 		}
+		fmt.Fprintf(os.Stderr, "Linepos: %d, Byte: %c\n", s.linepos, b)
 		
 		switch b {
 		case '\n':
@@ -103,10 +105,6 @@ func (s *Shell) Prompt() ([]string, error) {
 				break
 			}
 			s.overwrite(3)
-			if s.linepos == -1 {
-				s.linebuf = s.linebuf[:len(s.linebuf)-1]
-				break
-			}
 			
 			s.overwritef(len(s.linebuf)-s.linepos+1)
 			s.linebuf = s.linebuf.remove(s.linepos)
@@ -124,13 +122,9 @@ func (s *Shell) Prompt() ([]string, error) {
 				return nil, err
 			}
 		default:
-			if s.linepos == -1 {
-				s.linebuf = s.linebuf.add(b)
-			} else {
-				s.overwritef(len(s.linebuf)-s.linepos)
-				s.linebuf = s.linebuf.insert(s.linepos, b)
-				s.linepos++
-			}
+			s.overwritef(len(s.linebuf)-s.linepos)
+			s.linebuf = s.linebuf.insert(s.linepos, b)
+			s.linepos++
 		}
 	}
 	panic("not reached!")
@@ -219,11 +213,6 @@ func (s *Shell) handleEscSeq(seq Seq) error {
 			s.histpos = len(s.hist)-1
 		}
 	}
-	if seq == SEQ_LEFT || seq == SEQ_RIGHT {
-		if s.linepos == -1 {
-			s.linepos = len(s.linebuf)
-		}
-	}
 	switch (seq) {
 	case SEQ_UP:
 		s.histpos--
@@ -260,16 +249,16 @@ func (s *Shell) handleEscSeq(seq Seq) error {
 		return fmt.Errorf("Read unsupported escape sequence of %d ('%c')", seq, seq)
 	}
 	if seq == SEQ_UP || seq == SEQ_DOWN {
-		if (s.linepos == -1) {
-			s.bksp(len(s.linebuf) + 4)
-		} else {
-			s.overwritef(len(s.linebuf) - s.linepos)
-			s.bksp(s.linepos + 4)
-			s.linepos = -1
-		}
-		s.linebuf = make([]byte, len(s.hist[s.histpos]))
+		// +4 accounts for the length of the terminal escape sequence
+		s.bksp(s.linepos + 4)
+		s.linepos = len(s.hist[s.histpos])
+		oldlen := len(s.linebuf)
+		
+		s.linebuf = make([]byte, s.linepos)
 		copy(s.linebuf, s.hist[s.histpos])
 		fmt.Fprintf(s.wr, "%s", s.linebuf)
+		
+		s.overwritef(oldlen - s.linepos)
 	}
 	return nil
 }
