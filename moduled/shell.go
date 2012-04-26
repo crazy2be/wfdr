@@ -85,7 +85,6 @@ func (s *Shell) Prompt() ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Fprintf(os.Stderr, "Linepos: %d, Byte: %c\n", s.linepos, b)
 		
 		switch b {
 		case '\n':
